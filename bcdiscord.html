@@ -1,0 +1,245 @@
+<!doctype HTML>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>BCDiscord</title>
+<script type="text/JavaScript" src="lib/discord.io/index.js"></script> <!-- The discord.io client file -->
+<script type="text/JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<style type="text/css">
+span.fail { color: red }
+#connect_discord { font-size: 120%; font-weight: bold; padding: 0.6em 1.2em }
+</style>
+</head>
+<script type="text/JavaScript">
+$(function() {
+    const commandMessage = 'bcdice';
+    const resultSpan = $('#result');
+    const bcdiceApiUrlInput = $('#api_url');
+    
+    const systemInfo = {};
+    
+    const notice = function(isFail=false, message='', doDesktopNotice=false) {
+        if (isFail) {
+            resultSpan.addClass('fail').text(message);
+        } else {
+            resultSpan.removeClass('fail').text(message);
+        }
+        // TODO デスクトップ通知
+    }
+    const doneNotice = function(message, doDesktopNotice=false) {
+        notice(false, message, doDesktopNotice);
+    }
+    const failNotice = function(message, doDesktopNotice=false) {
+        notice(true, message, doDesktopNotice);
+    }
+    const getBCDiceApiUrl = function(joinUrl) {
+        let apiUrl = bcdiceApiUrlInput.val();
+        if (apiUrl && apiUrl != '') {
+            apiUrl = apiUrl.trim();
+            if (joinUrl && apiUrl.substr(apiUrl.length - 1) === '/') {
+                apiUrl = apiUrl.substr(0, apiUrl.length - 1) + joinUrl;
+            } else if (joinUrl) {
+                apiUrl += joinUrl;
+            }
+        }
+        return apiUrl;
+    }
+    // APIのテスト
+    $('#api_test').on('click', function() {
+        const command = $('#test_string').val();
+        let apiUrl = getBCDiceApiUrl();
+        if (!apiUrl || apiUrl == '') {
+            alert('BCDice-APIのURLが必要です');
+            bcdiceApiUrlInput.focus();
+            return;
+        }
+        let data = {};
+        let doneCallback;
+        if (command && command.trim() != '') {
+            apiUrl = getBCDiceApiUrl('/v1/diceroll');
+            data = {system: 'DiceBot', command: command.trim()};
+            doneCallback = function(data) { doneNotice(`result${data.result}`); };
+        } else {
+            apiUrl = getBCDiceApiUrl('/v1/version');
+            doneCallback = function(data) { doneNotice(`api:${data.api} bcdice:${data.bcdice}`); }
+        }
+        $.ajax({
+            type: 'GET',
+            url: apiUrl,
+            data: data,
+            dataType: 'jsonp'
+        })
+        .done(doneCallback)
+        .fail(function(jqXHR) { failNotice(`失敗しました(${jqXHR.status})`); });
+    });
+    // Discordへの接続
+    $('#connect_discord').on('click', function() {
+        const token = $('#token').val();
+        if (token && token != '') {
+            const client = new Discord.Client({
+                token: token,
+                autorun: true
+            });
+            
+            const sendHowToUse = function(channelID) {
+                client.sendMessage({
+                    to: channelID,
+                    message: "How to use\n# Show dice bot list\n> bcdice list\n# Change dice bot\n> bcdice set SYSTEM_NAME\n# Show Dice bot help\n> bcdice help SYSTEM_NAME\n# Show current Status\n> bcdice status"
+                });
+            }
+            
+            client.on('ready', function() {
+                doneNotice('Botが接続しました');
+            });
+            
+            client.on('disconnect', function() {
+                failNotice('Botが切断されました', true);
+            });
+            
+            client.on('message', function(user, userID, channelID, message, event) {
+                if (client.id === userID) {
+                    return;
+                }
+                const commands = message.trim().split(/\s+/);
+                if (commands[0].toLowerCase() === commandMessage) {
+                    if (commands[1]) {
+                        commands[1] = commands[1].toLowerCase();
+                    }
+                    switch (commands[1]) {
+                    case 'list':
+                        $.ajax({
+                            type: 'GET',
+                            url: getBCDiceApiUrl('/v1/systems'),
+                            dataType: 'jsonp'
+                        })
+                        .done(function(data) {
+                            client.sendMessage({
+                                to: channelID,
+                                message: `[DiceBot List]\n${data.systems.join("\n")}`
+                            });
+                        })
+                        .fail(function() {
+                            client.sendMessage({
+                                to: channelID,
+                                message: `BCDice-API Connection Failed`
+                            });
+                        });
+                        break;
+                    case 'set':
+                        if (commands.length > 2) {
+                            $.ajax({
+                                type: 'GET',
+                                url: getBCDiceApiUrl('/v1/systeminfo'),
+                                data: {system: commands[2]},
+                                dataType: 'jsonp'
+                            })
+                            .done(function(data) {
+                                systemInfo[channelID] = data.systeminfo;
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `BCDice system is changed: ${data.systeminfo.gameType}\n${data.systeminfo.info}`
+                                });
+                            })
+                            .fail(function() {
+                                //TODO 接続失敗を考慮
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `[${commands[2]}]\nSystem '${commands[2]}' is not found`
+                                });
+                            });
+                        } else {
+                            client.sendMessage({
+                                to: channelID,
+                                message: `[ERROR] When you want to change dice system\n        bcdice set SYSTEM_NAME\nExample bcdice set AceKillerGene`
+                            });
+                        }
+                        break;
+                    case 'save':
+                        break;
+                    case 'load':
+                        break;
+                    case 'help':
+                        if (commands.length > 2) {
+                            $.ajax({
+                                type: 'GET',
+                                url: getBCDiceApiUrl('/v1/systeminfo'),
+                                data: {system: commands[2]},
+                                dataType: 'jsonp'
+                            })
+                            .done(function(data) {
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `[${data.systeminfo.gameType}]\n${data.systeminfo.info}`
+                                });
+                            })
+                            .fail(function() {
+                                //TODO 接続失敗を考慮
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `[${commands[2]}]\nSystem '${commands[2]}' is not found`
+                                });
+                            });
+                        } else if (systemInfo[channelID]) {
+                            client.sendMessage({
+                                to: channelID,
+                                message: `[${systemInfo[channelID].gameType}]\n${systemInfo[channelID].info}`
+                            });
+                        } else {
+                            sendHowToUse(channelID);
+                        }
+                        break;
+                    case 'status':
+                        $.ajax({
+                            type: 'GET',
+                            url: getBCDiceApiUrl('/v1/version'),
+                            dataType: 'jsonp'
+                        })
+                        .done(function(data) {
+                            client.sendMessage({
+                                to: channelID,
+                                message: `[BCDiceClient] for ${getBCDiceApiUrl()} : ${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}(v.${data.bcdice})`
+                            });
+                        });
+                        break;
+                    default:
+                        sendHowToUse(channelID);
+                        break;
+                    }
+                } else {
+                    //TODO すべてBCDice-APIに投げずにある程度門前払い
+                    //TODO 全角半角変換
+                    $.ajax({
+                        type: 'GET',
+                        url: getBCDiceApiUrl('/v1/diceroll'),
+                        data: {
+                            system: systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot',
+                            command: commands[0]
+                        },
+                        dataType: 'jsonp'
+                    })
+                    .done(function(data) {
+                        client.sendMessage({
+                            to: channelID,
+                            message: `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}${data.result}`
+                        });
+                    });
+                }
+            });
+        } else {
+            alert('Discord Botのtokenが必要です');
+            $('#token').focus();
+            return;
+        }
+    });
+});
+</script>
+<body>
+<div>
+BCDice-API URL: <input type="text" size="60" id="api_url" value="" placeholder="BCDice-APIのURL"><br>
+Discord Bot Token: <input type="password" size="70" id="token" placeholder="あなたのDiscord BotのToken"><br>
+<input type="text" size="40" id="test_string" placeholder="2D6+2>=7 など、空の場合はバージョン取得"> <input type="button" value="BCDice-APIのテスト" id="api_test"><br>
+<span id="result"></span><br>
+<input type="button" value="Discordに接続" id="connect_discord">
+</div>
+</body>
+</html>
