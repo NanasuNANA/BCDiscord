@@ -17,8 +17,10 @@ $(function() {
     const resultSpan = $('#result');
     const bcdiceApiUrlInput = $('#api_url');
     const botTokenInput = $('#token');
-    
-    const systemInfo = {};
+    // チャンネルごとの設定を保存
+    let systemInfo = {};
+    // チャンネル→ユーザ→配列インデックス
+    let saveData = {}
     
     if (localStorage.getItem(`${appName}_api_url`)) {
         bcdiceApiUrlInput.val(localStorage.getItem(`${appName}_api_url`));
@@ -172,6 +174,17 @@ $(function() {
                     case 'save':
                         break;
                     case 'load':
+                        if ($.isNumeric(commands[2]) && saveData[channelID] && saveData[channelID][userID] && saveData[channelID][userID][commands[2] - 1]) {
+                            client.sendMessage({
+                                to: channelID,
+                                message: saveData[channelID][userID][commands[2] - 1]
+                            });
+                        } else {
+                            client.sendMessage({
+                                to: channelID,
+                                message: `Not found (index = ${commands[2]})`
+                            });
+                        }
                         break;
                     case 'help':
                         if (commands.length > 2) {
@@ -236,16 +249,35 @@ $(function() {
                     })
                     .done(function(data) {
                         localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
-                        client.sendMessage({
-                            to: channelID,
-                            message: `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}${data.result}`
-                        });
+                        const responsMessage = `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}${data.result}`
+                        if (data.secret) {
+                            if (!saveData[channelID]) {
+                                saveData[channelID] = {};
+                            }
+                            if (!saveData[channelID][userID]) {
+                                saveData[channelID][userID] = [];
+                            }
+                            const length = saveData[channelID][userID].push(responsMessage);
+                            client.sendMessage({
+                                to: channelID,
+                                message: `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}: [Secret Dice (Index = ${length})]`
+                            });
+                            client.sendMessage({
+                                to: userID,
+                                message: `To recall this,\nbcdice load ${length}\n${responsMessage}`
+                            });
+                        } else {
+                            client.sendMessage({
+                                to: channelID,
+                                message: responsMessage
+                            });
+                        }
                     });
                 }
             });
         } else {
             alert('Discord Botのtokenが必要です');
-            $('#token').focus();
+            botTokenInput.focus();
             return;
         }
     });
