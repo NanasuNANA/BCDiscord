@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>BCDiscord</title>
+<title>BCDiscord for Browser</title>
 <script type="text/JavaScript" src="lib/discord.io/index.js"></script> <!-- The discord.io client file -->
 <script type="text/JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <style type="text/css">
@@ -249,28 +249,30 @@ $(function() {
                     })
                     .done(function(data) {
                         localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
-                        const responsMessage = `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}${data.result}`
-                        if (data.secret) {
-                            if (!saveData[channelID]) {
-                                saveData[channelID] = {};
+                        if (data.ok) {
+                            const responsMessage = `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}${data.result}`
+                            if (data.secret) {
+                                if (!saveData[channelID]) {
+                                    saveData[channelID] = {};
+                                }
+                                if (!saveData[channelID][userID]) {
+                                    saveData[channelID][userID] = [];
+                                }
+                                const length = saveData[channelID][userID].push(responsMessage);
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}: [Secret Dice (Index = ${length})]`
+                                });
+                                client.sendMessage({
+                                    to: userID,
+                                    message: `To recall this,\nbcdice load ${length}\n${responsMessage}`
+                                });
+                            } else {
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: responsMessage
+                                });
                             }
-                            if (!saveData[channelID][userID]) {
-                                saveData[channelID][userID] = [];
-                            }
-                            const length = saveData[channelID][userID].push(responsMessage);
-                            client.sendMessage({
-                                to: channelID,
-                                message: `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}: [Secret Dice (Index = ${length})]`
-                            });
-                            client.sendMessage({
-                                to: userID,
-                                message: `To recall this,\nbcdice load ${length}\n${responsMessage}`
-                            });
-                        } else {
-                            client.sendMessage({
-                                to: channelID,
-                                message: responsMessage
-                            });
                         }
                     });
                 }
@@ -286,7 +288,7 @@ $(function() {
 <body>
 <div>
 Discord Bot Token: <input type="password" size="70" id="token" placeholder="あなたのDiscord BotのToken"><br>
-BCDice-API URL: <input type="text" size="60" id="api_url" value="" placeholder="BCDice-APIのURL"><br>
+BCDice-API URL: <input type="text" size="60" id="api_url" placeholder="BCDice-APIのURL"><br>
 <input type="text" size="40" id="test_string" placeholder="2D6+2>=7 など、空の場合はバージョン取得"> <input type="button" value="BCDice-APIのテスト" id="api_test"><br>
 <span id="result"></span><br>
 <input type="button" value="Discordに接続" id="connect_discord">
