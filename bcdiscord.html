@@ -329,8 +329,7 @@ $(function() {
                             console.log(saveMessage);
                             saveMessage = saveMessage.substr(saveMessage.indexOf(tmp[1]) + tmp[1].length);
                             console.log(saveMessage);
-                            saveMessage = saveMessage.substr(saveMessage.indexOf(tmp[2]) + tmp[2].length - 1);
-                            console.log(saveMessage);
+                            saveMessage = saveMessage.substr(saveMessage.indexOf(tmp[2]));
                             if (!saveData[userID]) {
                                 saveData[userID] = [];
                             }
