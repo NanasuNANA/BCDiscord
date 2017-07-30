@@ -11,6 +11,21 @@ span.fail { color: red }
 </style>
 </head>
 <script type="text/JavaScript">
+// 全角半角変換かつnull、undefinedを空文字に
+const toCommandString = function(str) {
+    if (!str) {
+        return '';
+    }
+    return str.replace(/[Ａ-Ｚａ-ｚ０-９！＂＃＄％＆＇（）＊＋，－．／：；＜＝＞？＠［＼］＾＿｀｛｜｝]/g, function(s) { return String.fromCharCode( s.charCodeAt(0) - 0xFEE0 ); })
+        .replace(/[“”]/g, "\"")
+        .replace(/’/g, "'")
+        .replace(/‘/g, "`")
+        .replace(/￥/g, "\\")
+        .replace(/　/g, " ")
+        .replace(/[‐－―]/g, '-')
+        .replace(/～〜/g, "~");
+}
+// 本体
 $(function() {
     const commandMessage = 'bcdice';
     const appName = 'BCDiscord';
@@ -115,7 +130,7 @@ $(function() {
                 if (client.id === userID) {
                     return;
                 }
-                const commands = message.trim().split(/\s+/);
+                const commands = toCommandString(message.trim()).split(/\s+/);
                 if (commands[0].toLowerCase() === commandMessage) {
                     if (commands[1]) {
                         commands[1] = commands[1].toLowerCase();
@@ -171,8 +186,8 @@ $(function() {
                             });
                         }
                         break;
-                    case 'save':
-                        break;
+                    //case 'save':
+                    //    break;
                     case 'load':
                         if ($.isNumeric(commands[2]) && saveData[channelID] && saveData[channelID][userID] && saveData[channelID][userID][commands[2] - 1]) {
                             client.sendMessage({
@@ -236,8 +251,10 @@ $(function() {
                         break;
                     }
                 } else {
-                    //TODO すべてBCDice-APIに投げずにある程度門前払い
-                    //TODO 全角半角変換
+                    //すべてBCDice-APIに投げずにchoiceが含まれるか英数記号以外は門前払い
+                    if (!(/choice/i.test(commands[0]) || /^[a-zA-Z0-9!-/:-@¥[-`{-~]+$/.test(commands[0]))) {
+                        return;
+                    }
                     $.ajax({
                         type: 'GET',
                         url: getBCDiceApiUrl('/v1/diceroll'),
@@ -249,30 +266,31 @@ $(function() {
                     })
                     .done(function(data) {
                         localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
-                        if (data.ok) {
-                            const responsMessage = `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}${data.result}`
-                            if (data.secret) {
-                                if (!saveData[channelID]) {
-                                    saveData[channelID] = {};
-                                }
-                                if (!saveData[channelID][userID]) {
-                                    saveData[channelID][userID] = [];
-                                }
-                                const length = saveData[channelID][userID].push(responsMessage);
-                                client.sendMessage({
-                                    to: channelID,
-                                    message: `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}: [Secret Dice (Index = ${length})]`
-                                });
-                                client.sendMessage({
-                                    to: userID,
-                                    message: `To recall this,\nbcdice load ${length}\n${responsMessage}`
-                                });
-                            } else {
-                                client.sendMessage({
-                                    to: channelID,
-                                    message: responsMessage
-                                });
+                        if (!data.ok) {
+                            return;
+                        }
+                        const responsMessage = `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}${data.result}`
+                        if (data.secret) {
+                            if (!saveData[channelID]) {
+                                saveData[channelID] = {};
                             }
+                            if (!saveData[channelID][userID]) {
+                                saveData[channelID][userID] = [];
+                            }
+                            const length = saveData[channelID][userID].push(responsMessage);
+                            client.sendMessage({
+                                to: channelID,
+                                message: `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}: [Secret Dice (Index = ${length})]`
+                            });
+                            client.sendMessage({
+                                to: userID,
+                                message: `To recall this,\nbcdice load ${length}\n${responsMessage}`
+                            });
+                        } else {
+                            client.sendMessage({
+                                to: channelID,
+                                message: responsMessage
+                            });
                         }
                     });
                 }
