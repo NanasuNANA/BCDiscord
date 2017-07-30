@@ -10,7 +10,7 @@ BCDice-API([Github](https://github.com/NKMR6194/bcdice-api "bcdice-api"))がjson
 4. *Create a Bot User*をクリック、**Add a Bot to this App?**と聞かれたら*Yes, do it!*
 5. **App Bot User**欄が出てくるのでTokenの横の*click to reveal*をクリック（*Public Bot*と*Require OAuth2 Code Grant*のチェックは入れない）
 6. **出てきたTokenをローカルファイルにコピペして控えておく**、この値は人に教えてはいけないルール
-7. https://discordapp.com/oauth2/authorize?client\_id=[Client IDの数字]&scope=bot&permissions=0 にアクセス
+7. https://discordapp.com/oauth2/authorize?client_id=[Client IDの数字]&scope=bot&permissions=0 にアクセス
 8. Botを使いたいサーバーに追加。reCHAPTCHAが出てくる、あなたはロボットではありませんね
 9. **認証しました**と表示されたらOK、選択したサーバーにオフライン状態のBotがいますね
 
