@@ -6,8 +6,10 @@
 <script type="text/JavaScript" src="lib/discord.io/index.js"></script> <!-- The discord.io client file -->
 <script type="text/JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <style type="text/css">
+body {max-width: 700px}
 span.fail { color: red }
 #connect_discord { font-size: 120%; font-weight: bold; padding: 0.6em 1.2em; width: 12em }
+#reset_all { color: red; margin-top: 3.6em; float: right; font-size: 80%; background-color: transparent; border: 0px none }
 </style>
 </head>
 <script type="text/JavaScript">
@@ -49,7 +51,7 @@ $(function() {
     const botTokenInput = $('#token');
     // チャンネルごとの設定を保存
     let systemInfo = {};
-    // チャンネル→ユーザ→配列インデックス
+    // ユーザ→配列インデックス
     let saveData = {};
     // ゲームリストの大文字小文字変換用
     let gameListLowerCaseTo = {};
@@ -153,7 +155,7 @@ $(function() {
             const sendHowToUse = function(channelID) {
                 client.sendMessage({
                     to: channelID,
-                    message: "**How to use**\n# Show dice bot list\n> \`bcdice list\`\n# Change dice bot\n> \`bcdice set SYSTEM_NAME\`\n# Show Dice bot help\n> \`bcdice help SYSTEM_NAME\`\n# Show current Status\n> \`bcdice status\`\n# Reset Dice bot and Secret dice\n> \`bcdice reset all\`"
+                    message: "**How to use**\n# Show dice bot list\n> \`bcdice list\`\n# Change dice bot\n> \`bcdice set SYSTEM_NAME\`\n# Show Dice bot help\n> \`bcdice help SYSTEM_NAME\`\n# Show current Status\n> \`bcdice status\`\n# Reset Your Secret and Save data\n> \`bcdice reset me\`"
                 });
             }
             
@@ -248,27 +250,25 @@ $(function() {
                         }
                         break;
                     case 'reset':
-                            if (commands[2] && commands[2].toLowerCase() === 'all') {
-                                delete systemInfo[channelID];
-                                localStorage.setItem(`${appName}_systemInfo`, JSON.stringify(systemInfo));
-                                delete saveData[channelID];
+                            if (commands[2] && commands[2].toLowerCase() === 'me') {
+                                delete saveData[userID];
                                 localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${escapeMarkdwon(appName)}]\n**Reset this channel done**`
+                                    message: `[${escapeMarkdwon(appName)}]\n**Reset your Secret and Save data**`
                                 });
                             } else {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${escapeMarkdwon(appName)}]\n# If you need **Reset this channel,**\n> \`bcdice reset all\``
+                                    message: `[${escapeMarkdwon(appName)}]\n# If you need **Reset your Secret and Save data,**\n> \`bcdice reset me\``
                                 });
                             }
                         break;
                     case 'load':
-                        if ($.isNumeric(commands[2]) && saveData[channelID] && saveData[channelID][userID] && saveData[channelID][userID][commands[2] - 1]) {
+                        if ($.isNumeric(commands[2]) && saveData[userID] && saveData[userID][commands[2] - 1]) {
                             client.sendMessage({
                                 to: channelID,
-                                message: saveData[channelID][userID][commands[2] - 1]
+                                message: saveData[userID][commands[2] - 1]
                             });
                         } else {
                             client.sendMessage({
@@ -322,6 +322,31 @@ $(function() {
                             });
                         });
                         break;
+                    case 'save':
+                        const tmp = message.split(/[\s　]+/, 3);
+                        if (tmp[2]) {
+                            let saveMessage = message.substr(message.indexOf(tmp[0]) + tmp[0].length);
+                            console.log(saveMessage);
+                            saveMessage = saveMessage.substr(saveMessage.indexOf(tmp[1]) + tmp[1].length);
+                            console.log(saveMessage);
+                            saveMessage = saveMessage.substr(saveMessage.indexOf(tmp[2]) + tmp[2].length - 1);
+                            console.log(saveMessage);
+                            if (!saveData[userID]) {
+                                saveData[userID] = [];
+                            }
+                            const length = saveData[userID].push(escapeMarkdwon(saveMessage));
+                            client.sendMessage({
+                                to: userID,
+                                message: `To recall this,\n\`bcdice load ${length}\`\n${saveMessage}`
+                            });
+                            localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
+                        } else {
+                            client.sendMessage({
+                                to: userID,
+                                message: `[ERROR] When you want to save Message\n        *bcdice save SAVEING MESSAGE*\nExample \`bcdice save I love You.\``
+                            });
+                        }
+                        break;
                     default:
                         sendHowToUse(channelID);
                         break;
@@ -347,13 +372,10 @@ $(function() {
                         }
                         const responsMessage = `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(data.result)}`
                         if (data.secret) {
-                            if (!saveData[channelID]) {
-                                saveData[channelID] = {};
+                            if (!saveData[userID]) {
+                                saveData[userID] = [];
                             }
-                            if (!saveData[channelID][userID]) {
-                                saveData[channelID][userID] = [];
-                            }
-                            const length = saveData[channelID][userID].push(responsMessage);
+                            const length = saveData[userID].push(responsMessage);
                             client.sendMessage({
                                 to: channelID,
                                 message: `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}: [Secret Dice (Index = ${escapeMarkdwon(length)})]`
@@ -382,11 +404,14 @@ $(function() {
 </script>
 <body>
 <div>
+<form onsubmit="return false;">
 Discord Bot Token: <input type="password" size="70" id="token" placeholder="あなたのDiscord BotのToken"><br>
 BCDice-API URL: <input type="text" size="60" id="api_url" placeholder="BCDice-APIのURL"><br>
 <input type="text" size="40" id="test_string" placeholder="2D6+2>=7 など、空の場合はバージョン取得"> <input type="button" value="BCDice-APIのテスト" id="api_test"><br>
 <span id="result"></span><br>
 <input type="button" value="Discordに接続" id="connect_discord">
+<input type="reset" value="全データの削除" id="reset_all" onclick="if (confirm('保存されているすべてのデータを削除しますか？')) {localStorage.clear(); return true;} else { return false; }">
+</form>
 </div>
 </body>
 </html>
