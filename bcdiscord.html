@@ -280,8 +280,8 @@ $(function() {
                         break;
                     }
                 } else {
-                    //すべてBCDice-APIに投げずにchoiceが含まれるか英数記号以外は門前払い
-                    if (!(/choice/i.test(commands[0]) || /^[a-zA-Z0-9!-/:-@¥[-`{-~]+$/.test(commands[0]))) {
+                    //すべてBCDice-APIに投げずにchoice[]が含まれるか英数記号以外は門前払い
+                    if (!(/choice\[.*\]/i.test(commands[0]) || /^[a-zA-Z0-9!-/:-@¥[-`{-~]+$/.test(commands[0]))) {
                         return;
                     }
                     $.ajax({
