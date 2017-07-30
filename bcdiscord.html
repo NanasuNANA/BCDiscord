@@ -113,6 +113,7 @@ $(function() {
     });
     // Discordへの接続
     $('#connect_discord').on('click', function() {
+        $('#connect_discord').prop("disabled", true);
         const token = botTokenInput.val();
         if (token && token != '') {
             const client = new Discord.Client({
@@ -139,15 +140,16 @@ $(function() {
                     for (let gameType of data.systems) {
                         gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
                     }
-                    doneNotice(`${client.username}が接続しました、BCDice-APIのテストに成功しました`);
+                    doneNotice(`Discord Bot(${client.username})が接続しました、BCDice-APIのテストに成功しました`);
                 })
                 .fail(function() {
-                    failNotice(`${client.username}が接続しましたが、BCDice-APIのテストに失敗しました`);
+                    failNotice(`Discord Bot(${client.username})が接続しましたが、BCDice-APIのテストに失敗しました`);
                 });
             });
             
             client.on('disconnect', function() {
-                failNotice(`${client.username}が切断されました`, true);
+                $('#connect_discord').prop("disabled", false);
+                failNotice(`Discord Botが切断されました`, true);
             });
             
             client.on('message', function(user, userID, channelID, message, event) {
