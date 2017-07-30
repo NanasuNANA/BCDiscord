@@ -23,6 +23,7 @@ const toCommandString = function(str) {
         .replace(/￥/g, "\\")
         .replace(/　/g, " ")
         .replace(/[‐－―]/g, '-')
+        .replace(/、/g, ',')
         .replace(/～〜/g, "~");
 }
 // 本体
@@ -35,7 +36,9 @@ $(function() {
     // チャンネルごとの設定を保存
     let systemInfo = {};
     // チャンネル→ユーザ→配列インデックス
-    let saveData = {}
+    let saveData = {};
+    // ゲームリストの大文字小文字変換用
+    let gameListLowerCaseTo = {};
     
     if (localStorage.getItem(`${appName}_api_url`)) {
         bcdiceApiUrlInput.val(localStorage.getItem(`${appName}_api_url`));
@@ -119,11 +122,25 @@ $(function() {
             
             client.on('ready', function() {
                 localStorage.setItem(`${appName}_token`, token);
-                doneNotice('Botが接続しました');
+                $.ajax({
+                    type: 'GET',
+                    url: getBCDiceApiUrl('/v1/systems'),
+                    dataType: 'jsonp'
+                })
+                .done(function(data) {
+                    localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
+                    for (let gameType of data.systems) {
+                        gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
+                    }
+                    doneNotice(`${client.username}が接続しました、BCDice-APIのテストに成功しました`);
+                })
+                .fail(function() {
+                    failNotice(`${client.username}が接続しましたが、BCDice-APIのテストに失敗しました`);
+                });
             });
             
             client.on('disconnect', function() {
-                failNotice('Botが切断されました', true);
+                failNotice(`${client.username}が切断されました`, true);
             });
             
             client.on('message', function(user, userID, channelID, message, event) {
@@ -158,10 +175,16 @@ $(function() {
                         break;
                     case 'set':
                         if (commands.length > 2) {
+                            let gameType = false;
+                            for (let lower of Object.keys(gameListLowerCaseTo)) {
+                                if (commands[2].toLowerCase() === lower) {
+                                    gameType = gameListLowerCaseTo[lower];
+                                }
+                            }
                             $.ajax({
                                 type: 'GET',
                                 url: getBCDiceApiUrl('/v1/systeminfo'),
-                                data: {system: commands[2]},
+                                data: {system: gameType ? gameType : commands[2]},
                                 dataType: 'jsonp'
                             })
                             .done(function(data) {
@@ -203,10 +226,16 @@ $(function() {
                         break;
                     case 'help':
                         if (commands.length > 2) {
+                            let gameType = false;
+                            for (let lower of Object.keys(gameListLowerCaseTo)) {
+                                if (commands[2].toLowerCase() === lower) {
+                                    gameType = gameListLowerCaseTo[lower];
+                                }
+                            }
                             $.ajax({
                                 type: 'GET',
                                 url: getBCDiceApiUrl('/v1/systeminfo'),
-                                data: {system: commands[2]},
+                                data: {system: gameType ? gameType : commands[2]},
                                 dataType: 'jsonp'
                             })
                             .done(function(data) {
