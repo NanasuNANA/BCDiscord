@@ -157,6 +157,7 @@ $(function() {
                 })
                 .done(function(data) {
                     localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
+                    gameListLowerCaseTo = {};
                     for (let gameType of data.systems) {
                         gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
                     }
@@ -190,6 +191,10 @@ $(function() {
                         })
                         .done(function(data) {
                             localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
+                            gameListLowerCaseTo = {};
+                            for (let gameType of data.systems) {
+                                gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
+                            }
                             client.sendMessage({
                                 to: channelID,
                                 message: `[DiceBot List]\n\`\`\`${escapeBackTick(data.systems.join("\n"))}\`\`\``
@@ -204,16 +209,10 @@ $(function() {
                         break;
                     case 'set':
                         if (commands.length > 2) {
-                            let gameType = false;
-                            for (let lower of Object.keys(gameListLowerCaseTo)) {
-                                if (commands[2].toLowerCase() === lower) {
-                                    gameType = gameListLowerCaseTo[lower];
-                                }
-                            }
                             $.ajax({
                                 type: 'GET',
                                 url: getBCDiceApiUrl('/v1/systeminfo'),
-                                data: {system: gameType ? gameType : commands[2]},
+                                data: {system: gameListLowerCaseTo[commands[2].toLowerCase()] || commands[2]},
                                 dataType: 'jsonp'
                             })
                             .done(function(data) {
@@ -271,16 +270,10 @@ $(function() {
                         break;
                     case 'help':
                         if (commands.length > 2) {
-                            let gameType = false;
-                            for (let lower of Object.keys(gameListLowerCaseTo)) {
-                                if (commands[2].toLowerCase() === lower) {
-                                    gameType = gameListLowerCaseTo[lower];
-                                }
-                            }
                             $.ajax({
                                 type: 'GET',
                                 url: getBCDiceApiUrl('/v1/systeminfo'),
-                                data: {system: gameType ? gameType : commands[2]},
+                                data: {system: gameListLowerCaseTo[commands[2].toLowerCase()] || commands[2]},
                                 dataType: 'jsonp'
                             })
                             .done(function(data) {
