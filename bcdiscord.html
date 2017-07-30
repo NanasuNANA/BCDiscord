@@ -12,19 +12,26 @@ span.fail { color: red }
 </head>
 <script type="text/JavaScript">
 // 全角半角変換かつnull、undefinedを空文字に
-const toCommandString = function(str) {
+const toCommandString = function(str, nullSafe=true) {
     if (!str) {
-        return '';
+        return nullSafe ? '' : str;
     }
-    return str.replace(/[Ａ-Ｚａ-ｚ０-９！＂＃＄％＆＇（）＊＋，－．／：；＜＝＞？＠［＼］＾＿｀｛｜｝]/g, function(s) { return String.fromCharCode( s.charCodeAt(0) - 0xFEE0 ); })
-        .replace(/[“”]/g, "\"")
+    return str.toString().replace(/[Ａ-Ｚａ-ｚ０-９！＂＃＄％＆＇（）＊＋，－．／：；＜＝＞？＠［＼］＾＿｀｛｜｝]/g, function(s) { return String.fromCharCode(s.charCodeAt(0) - 0xFEE0); })
+        .replace(/[“”]/g, '"')
         .replace(/’/g, "'")
-        .replace(/‘/g, "`")
-        .replace(/￥/g, "\\")
-        .replace(/　/g, " ")
+        .replace(/‘/g, '`')
+        .replace(/￥/g, '\\')
+        .replace(/　/g, ' ')
         .replace(/[‐－―]/g, '-')
         .replace(/、/g, ',')
-        .replace(/～〜/g, "~");
+        .replace(/～〜/g, '~');
+}
+// バックチックと\をエスケープ
+const escapeBackTick = function(str, nullSafe=true) {
+    if (!str) {
+        return nullSafe ? '' : str;
+    }
+    return str.toString().replace(/\\/g, '\\\\').replace(/`/g, '\\`');
 }
 // 本体
 $(function() {
@@ -116,7 +123,7 @@ $(function() {
             const sendHowToUse = function(channelID) {
                 client.sendMessage({
                     to: channelID,
-                    message: "How to use\n# Show dice bot list\n> bcdice list\n# Change dice bot\n> bcdice set SYSTEM_NAME\n# Show Dice bot help\n> bcdice help SYSTEM_NAME\n# Show current Status\n> bcdice status"
+                    message: "**How to use**\n# Show dice bot list\n> \`bcdice list\`\n# Change dice bot\n> \`bcdice set SYSTEM_NAME\`\n# Show Dice bot help\n> \`bcdice help SYSTEM_NAME\`\n# Show current Status\n> \`bcdice status\`"
                 });
             }
             
@@ -163,13 +170,13 @@ $(function() {
                             localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                             client.sendMessage({
                                 to: channelID,
-                                message: `[DiceBot List]\n${data.systems.join("\n")}`
+                                message: `[DiceBot List]\n\`\`\`${escapeBackTick(data.systems.join("\n"))}\`\`\``
                             });
                         })
                         .fail(function() {
                             client.sendMessage({
                                 to: channelID,
-                                message: `BCDice-API Connection Failed`
+                                message: `**BCDice-API Connection Failed**`
                             });
                         });
                         break;
@@ -192,20 +199,20 @@ $(function() {
                                 systemInfo[channelID] = data.systeminfo;
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `BCDice system is changed: ${data.systeminfo.gameType}\n${data.systeminfo.info}`
+                                    message: `BCDice system is changed: ${data.systeminfo.gameType}\n\`\`\`${escapeBackTick(data.systeminfo.info)}\`\`\``
                                 });
                             })
                             .fail(function() {
                                 //TODO 接続失敗を考慮
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${commands[2]}]\nSystem '${commands[2]}' is not found`
+                                    message: `[${escapeBackTick(commands[2])}]\nSystem *'${escapeBackTick(commands[2])}'* is not found`
                                 });
                             });
                         } else {
                             client.sendMessage({
                                 to: channelID,
-                                message: `[ERROR] When you want to change dice system\n        bcdice set SYSTEM_NAME\nExample bcdice set AceKillerGene`
+                                message: `[ERROR] When you want to change dice system\n        *bcdice set SYSTEM_NAME*\nExample \`bcdice set AceKillerGene\``
                             });
                         }
                         break;
@@ -220,7 +227,7 @@ $(function() {
                         } else {
                             client.sendMessage({
                                 to: channelID,
-                                message: `Not found (index = ${commands[2]})`
+                                message: `Not found (index = ${escapeBackTick(commands[2])})`
                             });
                         }
                         break;
@@ -242,20 +249,20 @@ $(function() {
                                 localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${data.systeminfo.gameType}]\n${data.systeminfo.info}`
+                                    message: `[${data.systeminfo.gameType}]\n\`\`\`${escapeBackTick(data.systeminfo.info)}\`\`\``
                                 });
                             })
                             .fail(function() {
                                 //TODO 接続失敗を考慮
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${commands[2]}]\nSystem '${commands[2]}' is not found`
+                                    message: `[${escapeBackTick(commands[2])}]\nSystem *'${escapeBackTick(commands[2])}'* is not found`
                                 });
                             });
                         } else if (systemInfo[channelID]) {
                             client.sendMessage({
                                 to: channelID,
-                                message: `[${systemInfo[channelID].gameType}]\n${systemInfo[channelID].info}`
+                                message: `[${escapeBackTick(systemInfo[channelID].gameType)}]\n\`\`\`${escapeBackTick(systemInfo[channelID].info)}\`\`\``
                             });
                         } else {
                             sendHowToUse(channelID);
@@ -271,7 +278,7 @@ $(function() {
                             localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                             client.sendMessage({
                                 to: channelID,
-                                message: `[${appName}] for ${getBCDiceApiUrl()} : ${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}(v.${data.bcdice})`
+                                message: `[escapeBackTick(${appName})] for ${escapeBackTick(getBCDiceApiUrl())} : ${escapeBackTick(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}(v.${escapeBackTick(data.bcdice)})`
                             });
                         });
                         break;
@@ -298,7 +305,7 @@ $(function() {
                         if (!data.ok) {
                             return;
                         }
-                        const responsMessage = `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}${data.result}`
+                        const responsMessage = `**>${escapeBackTick(user)}**\n\`${escapeBackTick(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeBackTick(data.result)}\``
                         if (data.secret) {
                             if (!saveData[channelID]) {
                                 saveData[channelID] = {};
@@ -309,11 +316,11 @@ $(function() {
                             const length = saveData[channelID][userID].push(responsMessage);
                             client.sendMessage({
                                 to: channelID,
-                                message: `>${user}\n${systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot'}: [Secret Dice (Index = ${length})]`
+                                message: `**>${escapeBackTick(user)}**\n\`${escapeBackTick(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}: [Secret Dice (Index = ${escapeBackTick(length)})]\``
                             });
                             client.sendMessage({
                                 to: userID,
-                                message: `To recall this,\nbcdice load ${length}\n${responsMessage}`
+                                message: `To recall this,\n\`bcdice load ${length}\`\n${responsMessage}`
                             });
                         } else {
                             client.sendMessage({
