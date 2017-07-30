@@ -33,6 +33,13 @@ const escapeBackTick = function(str, nullSafe=true) {
     }
     return str.toString().replace(/\\/g, '\\\\').replace(/`/g, '\\`');
 }
+// マークダウンのインライン記法をエスケープ
+const escapeMarkdwon = function(str, nullSafe=true) {
+    if (!str) {
+        return nullSafe ? '' : str;
+    }
+    return escapeBackTick(str).replace(/\*/g, '\\*').replace(/_/g, '\\_');
+}
 // 本体
 $(function() {
     const commandMessage = 'bcdice';
@@ -46,14 +53,27 @@ $(function() {
     let saveData = {};
     // ゲームリストの大文字小文字変換用
     let gameListLowerCaseTo = {};
-    
+    // ローカルストレージから復元
     if (localStorage.getItem(`${appName}_api_url`)) {
         bcdiceApiUrlInput.val(localStorage.getItem(`${appName}_api_url`));
     }
     if (localStorage.getItem(`${appName}_token`)) {
         botTokenInput.val(localStorage.getItem(`${appName}_token`));
     }
-    
+    if (localStorage.getItem(`${appName}_systemInfo`)) {
+        try {
+            systemInfo = JSON.parse(localStorage.getItem(`${appName}_systemInfo`));
+        } catch (e) {
+            systemInfo = {};
+        }
+    }
+    if (localStorage.getItem(`${appName}_saveData`)) {
+        try {
+            saveData = JSON.parse(localStorage.getItem(`${appName}_saveData`));
+        } catch(e) {
+            saveData = {};
+        }
+    }
     const notice = function(isFail=false, message='', doDesktopNotice=false) {
         if (isFail) {
             resultSpan.addClass('fail').text(message);
@@ -124,7 +144,7 @@ $(function() {
             const sendHowToUse = function(channelID) {
                 client.sendMessage({
                     to: channelID,
-                    message: "**How to use**\n# Show dice bot list\n> \`bcdice list\`\n# Change dice bot\n> \`bcdice set SYSTEM_NAME\`\n# Show Dice bot help\n> \`bcdice help SYSTEM_NAME\`\n# Show current Status\n> \`bcdice status\`"
+                    message: "**How to use**\n# Show dice bot list\n> \`bcdice list\`\n# Change dice bot\n> \`bcdice set SYSTEM_NAME\`\n# Show Dice bot help\n> \`bcdice help SYSTEM_NAME\`\n# Show current Status\n> \`bcdice status\`\n# Reset Dice bot and Secret dice\n> \`bcdice reset all\`"
                 });
             }
             
@@ -201,14 +221,15 @@ $(function() {
                                 systemInfo[channelID] = data.systeminfo;
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `BCDice system is changed: ${data.systeminfo.gameType}\n\`\`\`${escapeBackTick(data.systeminfo.info)}\`\`\``
+                                    message: `BCDice system is changed: ${escapeMarkdwon(data.systeminfo.gameType)}\n\`\`\`${escapeBackTick(data.systeminfo.info)}\`\`\``
                                 });
+                                localStorage.setItem(`${appName}_systemInfo`, JSON.stringify(systemInfo));
                             })
                             .fail(function() {
                                 //TODO 接続失敗を考慮
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${escapeBackTick(commands[2])}]\nSystem *'${escapeBackTick(commands[2])}'* is not found`
+                                    message: `[${escapeMarkdwon(commands[2])}]\nSystem '${escapeMarkdwon(commands[2])}' is not found`
                                 });
                             });
                         } else {
@@ -218,8 +239,23 @@ $(function() {
                             });
                         }
                         break;
-                    //case 'save':
-                    //    break;
+                    case 'reset':
+                            if (commands[2] && commands[2].toLowerCase() === 'all') {
+                                delete systemInfo[channelID];
+                                localStorage.setItem(`${appName}_systemInfo`, JSON.stringify(systemInfo));
+                                delete saveData[channelID];
+                                localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `[${escapeMarkdwon(appName)}]\n**Reset this channel done**`
+                                });
+                            } else {
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `[${escapeMarkdwon(appName)}]\n# If you need **Reset this channel**\n> \`bcdice reset all\``
+                                });
+                            }
+                        break;
                     case 'load':
                         if ($.isNumeric(commands[2]) && saveData[channelID] && saveData[channelID][userID] && saveData[channelID][userID][commands[2] - 1]) {
                             client.sendMessage({
@@ -229,7 +265,7 @@ $(function() {
                         } else {
                             client.sendMessage({
                                 to: channelID,
-                                message: `Not found (index = ${escapeBackTick(commands[2])})`
+                                message: `Not found (index = ${escapeMarkdwon(commands[2])})`
                             });
                         }
                         break;
@@ -251,20 +287,20 @@ $(function() {
                                 localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${data.systeminfo.gameType}]\n\`\`\`${escapeBackTick(data.systeminfo.info)}\`\`\``
+                                    message: `[${escapeMarkdwon(data.systeminfo.gameType)}]\n\`\`\`${escapeBackTick(data.systeminfo.info)}\`\`\``
                                 });
                             })
                             .fail(function() {
                                 //TODO 接続失敗を考慮
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${escapeBackTick(commands[2])}]\nSystem *'${escapeBackTick(commands[2])}'* is not found`
+                                    message: `[${escapeMarkdwon(commands[2])}]\nSystem '${escapeMarkdwon(commands[2])}' is not found`
                                 });
                             });
                         } else if (systemInfo[channelID]) {
                             client.sendMessage({
                                 to: channelID,
-                                message: `[${escapeBackTick(systemInfo[channelID].gameType)}]\n\`\`\`${escapeBackTick(systemInfo[channelID].info)}\`\`\``
+                                message: `[${escapeMarkdwon(systemInfo[channelID].gameType)}]\n\`\`\`${escapeBackTick(systemInfo[channelID].info)}\`\`\``
                             });
                         } else {
                             sendHowToUse(channelID);
@@ -280,7 +316,7 @@ $(function() {
                             localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                             client.sendMessage({
                                 to: channelID,
-                                message: `[escapeBackTick(${appName})] for ${escapeBackTick(getBCDiceApiUrl())} : ${escapeBackTick(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}(v.${escapeBackTick(data.bcdice)})`
+                                message: `[${escapeMarkdwon(appName)}] for ${escapeMarkdwon(getBCDiceApiUrl())} : ${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}(v.${escapeMarkdwon(data.bcdice)})`
                             });
                         });
                         break;
@@ -307,7 +343,7 @@ $(function() {
                         if (!data.ok) {
                             return;
                         }
-                        const responsMessage = `**>${escapeBackTick(user)}**\n\`${escapeBackTick(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeBackTick(data.result)}\``
+                        const responsMessage = `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(data.result)}`
                         if (data.secret) {
                             if (!saveData[channelID]) {
                                 saveData[channelID] = {};
@@ -318,12 +354,13 @@ $(function() {
                             const length = saveData[channelID][userID].push(responsMessage);
                             client.sendMessage({
                                 to: channelID,
-                                message: `**>${escapeBackTick(user)}**\n\`${escapeBackTick(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}: [Secret Dice (Index = ${escapeBackTick(length)})]\``
+                                message: `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}: [Secret Dice (Index = ${escapeMarkdwon(length)})]`
                             });
                             client.sendMessage({
                                 to: userID,
                                 message: `To recall this,\n\`bcdice load ${length}\`\n${responsMessage}`
                             });
+                            localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                         } else {
                             client.sendMessage({
                                 to: channelID,
