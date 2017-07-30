@@ -22,13 +22,16 @@ BCDice-API([Github](https://github.com/NKMR6194/bcdice-api "bcdice-api"))がjson
 ###ダイスを振る
 そのままでも標準DiceBotのダイスが振れます、特定のダイスボットを使用したい場合は
 
-`bcdice set [ゲームタイプ]`
+`bcdice set [システム名]`
 
-と打ってエンター、どんなゲームタイプがあるか知りたい場合は
+と打ってエンター、どんなシステム名が使えるか知りたい場合は
 
 `bcdice list`
 
 と打ってください。
+
+##その他
+シークレットダイスについてですが、平文で保存されているのでBCDice for Browerを起動している人が見るのは簡単です。どうせ難読化してもちょっとスクリプト書き換えれば外せるし、ということでそのまま。
 
 ##ライセンス
 libディレクトリの外部については[GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)でライセンスします。   
