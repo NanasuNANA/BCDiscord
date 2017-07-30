@@ -7,7 +7,7 @@
 <script type="text/JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <style type="text/css">
 span.fail { color: red }
-#connect_discord { font-size: 120%; font-weight: bold; padding: 0.6em 1.2em }
+#connect_discord { font-size: 120%; font-weight: bold; padding: 0.6em 1.2em; width: 12em }
 </style>
 </head>
 <script type="text/JavaScript">
@@ -100,6 +100,9 @@ $(function() {
         }
         return apiUrl;
     }
+    const saveApiUrl = function() {
+        localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
+    }
     // APIのテスト
     $('#api_test').on('click', function() {
         const command = $('#test_string').val();
@@ -125,22 +128,28 @@ $(function() {
             data: data,
             dataType: 'jsonp'
         })
+        .done(saveApiUrl)
         .done(doneCallback)
-        .done(function() {
-            localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
-        })
         .fail(function(jqXHR) { failNotice(`失敗しました(${jqXHR.status})`); });
     });
     // Discordへの接続
+    let client = null;
     $('#connect_discord').on('click', function() {
-        $('#connect_discord').prop("disabled", true);
+        if (client) {
+            if (!confirm('切断しますか？')) {
+                return;
+            }
+            client.disconnect();
+            client = null;
+            return;
+        }
         const token = botTokenInput.val();
         if (token && token != '') {
-            const client = new Discord.Client({
+            client = new Discord.Client({
                 token: token,
                 autorun: true
             });
-            
+            $('#connect_discord').val('Discordから切断');
             const sendHowToUse = function(channelID) {
                 client.sendMessage({
                     to: channelID,
@@ -155,8 +164,8 @@ $(function() {
                     url: getBCDiceApiUrl('/v1/systems'),
                     dataType: 'jsonp'
                 })
+                .done(saveApiUrl)
                 .done(function(data) {
-                    localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                     gameListLowerCaseTo = {};
                     for (let gameType of data.systems) {
                         gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
@@ -169,7 +178,7 @@ $(function() {
             });
             
             client.on('disconnect', function() {
-                $('#connect_discord').prop("disabled", false);
+                $('#connect_discord').val('Discordに接続');
                 failNotice(`Discord Botが切断されました`, true);
             });
             
@@ -189,8 +198,8 @@ $(function() {
                             url: getBCDiceApiUrl('/v1/systems'),
                             dataType: 'jsonp'
                         })
+                        .done(saveApiUrl)
                         .done(function(data) {
-                            localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                             gameListLowerCaseTo = {};
                             for (let gameType of data.systems) {
                                 gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
@@ -215,8 +224,8 @@ $(function() {
                                 data: {system: gameListLowerCaseTo[commands[2].toLowerCase()] || commands[2]},
                                 dataType: 'jsonp'
                             })
+                            .done(saveApiUrl)
                             .done(function(data) {
-                                localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                                 systemInfo[channelID] = data.systeminfo;
                                 client.sendMessage({
                                     to: channelID,
@@ -251,7 +260,7 @@ $(function() {
                             } else {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${escapeMarkdwon(appName)}]\n# If you need **Reset this channel**\n> \`bcdice reset all\``
+                                    message: `[${escapeMarkdwon(appName)}]\n# If you need **Reset this channel,**\n> \`bcdice reset all\``
                                 });
                             }
                         break;
@@ -276,8 +285,8 @@ $(function() {
                                 data: {system: gameListLowerCaseTo[commands[2].toLowerCase()] || commands[2]},
                                 dataType: 'jsonp'
                             })
+                            .done(saveApiUrl)
                             .done(function(data) {
-                                localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                                 client.sendMessage({
                                     to: channelID,
                                     message: `[${escapeMarkdwon(data.systeminfo.gameType)}]\n\`\`\`${escapeBackTick(data.systeminfo.info)}\`\`\``
@@ -305,8 +314,8 @@ $(function() {
                             url: getBCDiceApiUrl('/v1/version'),
                             dataType: 'jsonp'
                         })
+                        .done(saveApiUrl)
                         .done(function(data) {
-                            localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                             client.sendMessage({
                                 to: channelID,
                                 message: `[${escapeMarkdwon(appName)}] for ${escapeMarkdwon(getBCDiceApiUrl())} : ${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}(v.${escapeMarkdwon(data.bcdice)})`
@@ -331,8 +340,8 @@ $(function() {
                         },
                         dataType: 'jsonp'
                     })
+                    .done(saveApiUrl)
                     .done(function(data) {
-                        localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
                         if (!data.ok) {
                             return;
                         }
