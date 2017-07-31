@@ -340,7 +340,7 @@ $(function() {
                             if (!saveData[userID]) {
                                 saveData[userID] = [];
                             }
-                            const length = saveData[userID].push(escapeMarkdwon(saveMessage));
+                            const length = saveData[userID].push(saveMessage);
                             client.sendMessage({
                                 to: userID,
                                 message: `To recall this,\n\`bcdice load ${length}\`\n${saveMessage}`
