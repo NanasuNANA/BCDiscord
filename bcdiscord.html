@@ -149,7 +149,6 @@ $(function() {
                 return;
             }
             client.disconnect();
-            client = null;
             return;
         }
         const token = botTokenInput.val();
@@ -187,6 +186,7 @@ $(function() {
             });
             
             client.on('disconnect', function() {
+                client = null;
                 $('#connect_discord').val('Discordに接続');
                 failNotice(`Discord Botが切断されました`, true);
             });
