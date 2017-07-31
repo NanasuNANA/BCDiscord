@@ -362,12 +362,16 @@ $(function() {
                     if (!(/choice\[.*\]/i.test(commands[0]) || /^[a-zA-Z0-9!-/:-@¥[-`{-~]+$/.test(commands[0]))) {
                         return;
                     }
+                    // 前処理と後処理で値をやり取りするためのメモ
+                    const memo = {};
+                    // 後方互換
+                    const preProcess = CONFIG.pre_process || CONFIG.dice_command_post_process;
                     $.ajax({
                         type: 'GET',
                         url: getBCDiceApiUrl('/v1/diceroll'),
                         data: {
                             system: systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot',
-                            command: CONFIG.dice_command_post_process ? CONFIG.dice_command_post_process(commands[0], systemInfo[channelID]) : commands[0]
+                            command: preProcess ? preProcess(commands[0], systemInfo[channelID], memo) : commands[0]
                         },
                         dataType: 'jsonp'
                     })
@@ -376,7 +380,7 @@ $(function() {
                         if (!data.ok) {
                             return;
                         }
-                        const responsMessage = `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(data.result)}`
+                        const responsMessage = `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, systemInfo[channelID], memo) : data.result)}`
                         if (data.secret) {
                             if (!saveData[userID]) {
                                 saveData[userID] = [];
