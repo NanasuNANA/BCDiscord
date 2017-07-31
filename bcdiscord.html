@@ -367,7 +367,7 @@ $(function() {
                         url: getBCDiceApiUrl('/v1/diceroll'),
                         data: {
                             system: systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot',
-                            command: commands[0]
+                            command: CONFIG.dice_command_post_process ? CONFIG.dice_command_post_process(commands[0], systemInfo[channelID]) : commands[0]
                         },
                         dataType: 'jsonp'
                     })
