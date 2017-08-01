@@ -42,10 +42,15 @@ const escapeMarkdwon = function(str, nullSafe=true) {
     if (!str) {
         return nullSafe ? '' : str;
     }
-    return escapeBackTick(str).replace(/\*/g, '\\*').replace(/_/g, '\\_');
+    return escapeBackTick(str).replace(/\*/g, '\\*').replace(/_/g, '\\_').replace(/~/g, '\\~');
 }
 // 本体
 $(function() {
+// CONFIGがなければ空のオブジェクト
+    if (typeof CONFIG === 'undefined') {
+        var CONFIG = {};
+    }
+    // 定数
     const commandMessage = 'bcdice';
     const appName = 'BCDiscord';
     const resultSpan = $('#result');
@@ -215,7 +220,7 @@ $(function() {
                             }
                             client.sendMessage({
                                 to: channelID,
-                                message: `[DiceBot List]\n\`\`\`${escapeBackTick(data.systems.join("\n"))}\`\`\``
+                                message: `[DiceBot List]\n\`\`\`\n${escapeBackTick(data.systems.join("\n"))}\n\`\`\``
                             });
                         })
                         .fail(function() {
@@ -238,7 +243,7 @@ $(function() {
                                 systemInfo[channelID] = data.systeminfo;
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `BCDice system is changed: ${escapeMarkdwon(data.systeminfo.gameType)}\n\`\`\`${escapeBackTick(data.systeminfo.info)}\`\`\``
+                                    message: `BCDice system is changed: ${escapeMarkdwon(data.systeminfo.gameType)}\n\`\`\`\n${escapeBackTick(data.systeminfo.info)}\n\`\`\``
                                 });
                                 localStorage.setItem(`${appName}_systemInfo`, JSON.stringify(systemInfo));
                             })
@@ -296,7 +301,7 @@ $(function() {
                             .done(function(data) {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${escapeMarkdwon(data.systeminfo.gameType)}]\n\`\`\`${escapeBackTick(data.systeminfo.info)}\`\`\``
+                                    message: `[${escapeMarkdwon(data.systeminfo.gameType)}]\n\`\`\`\n${escapeBackTick(data.systeminfo.info)}\n\`\`\``
                                 });
                             })
                             .fail(function() {
@@ -309,7 +314,7 @@ $(function() {
                         } else if (systemInfo[channelID]) {
                             client.sendMessage({
                                 to: channelID,
-                                message: `[${escapeMarkdwon(systemInfo[channelID].gameType)}]\n\`\`\`${escapeBackTick(systemInfo[channelID].info)}\`\`\``
+                                message: `[${escapeMarkdwon(systemInfo[channelID].gameType)}]\n\`\`\`\n${escapeBackTick(systemInfo[channelID].info)}\n\`\`\``
                             });
                         } else {
                             sendHowToUse(channelID);
@@ -333,9 +338,7 @@ $(function() {
                         const tmp = message.split(/[\s　]+/, 3);
                         if (tmp[2]) {
                             let saveMessage = message.substr(message.indexOf(tmp[0]) + tmp[0].length);
-                            console.log(saveMessage);
                             saveMessage = saveMessage.substr(saveMessage.indexOf(tmp[1]) + tmp[1].length);
-                            console.log(saveMessage);
                             saveMessage = saveMessage.substr(saveMessage.indexOf(tmp[2]));
                             if (!saveData[userID]) {
                                 saveData[userID] = [];
@@ -362,8 +365,14 @@ $(function() {
                     if (!(/choice\[.*\]/i.test(commands[0]) || /^[a-zA-Z0-9!-/:-@¥[-`{-~]+$/.test(commands[0]))) {
                         return;
                     }
-                    // 前処理と後処理で値をやり取りするためのメモ
-                    const memo = {};
+                    const tmp = message.split(/[\s　]+/, 2);
+                    let comment = message.substr(message.indexOf(tmp[0]) + tmp[0].length);
+                    comment = tmp[1] ? comment.substr(comment.indexOf(tmp[1])) : '';
+                    // 前処理、後処理に渡す情報
+                    const infos = Object.assign({command: commands[0], raw_command: tmp[0], comment: comment}, systemInfo[channelID] || {});
+                    if (infos.prefixs) {
+                        infos.prefixs = [].concat(infos.prefixs); //変更防止
+                    }
                     // 後方互換
                     const preProcess = CONFIG.pre_process || CONFIG.dice_command_post_process;
                     $.ajax({
@@ -371,7 +380,7 @@ $(function() {
                         url: getBCDiceApiUrl('/v1/diceroll'),
                         data: {
                             system: systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot',
-                            command: preProcess ? preProcess(commands[0], systemInfo[channelID], memo) : commands[0]
+                            command: preProcess ? preProcess(commands[0], infos) : commands[0]
                         },
                         dataType: 'jsonp'
                     })
@@ -380,7 +389,7 @@ $(function() {
                         if (!data.ok) {
                             return;
                         }
-                        const responsMessage = `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, systemInfo[channelID], memo) : data.result)}`
+                        const responsMessage = `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, Object.assign(infos, data)) : data.result)}`
                         if (data.secret) {
                             if (!saveData[userID]) {
                                 saveData[userID] = [];

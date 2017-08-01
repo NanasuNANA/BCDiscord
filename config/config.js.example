@@ -1,0 +1,20 @@
+const CONFIG = {
+  api_url: 'http://www2.taruki.com/bcdice-api/', // BCDice-API サーバのURL
+  lock_url_input: true, // URL入力欄をロックするか（configファイルでURLが指定されている場合のみ有効）
+  // ダイスコマンドの全角半角変換後、APIに送る前に行う処理を定義できる
+  pre_process: function(command, infos) {
+    if (/(AceKillerGene|CodeLayerd|DoubleCross|GardenOrder)/i.test(infos.gameType)) {
+      // gameTypeがエースキラージーン等の場合、ダイスのデフォルトをD10にする
+      return command.replace(/(^|\b)(\d+D)(D|[^\d\w]|$)/gi, "$1$210$3");
+    }
+    return command;
+  },
+  // ダイスコマンドのAPIからの結果を表自前に行う処理を定義できる
+  post_process: function(result, infos) {
+    // コメントに「命中判定」「攻撃」「Attack」を含む場合、結果の「成功」を「命中！」に置き換える
+    if (/(命中判定|攻撃|Attack)/i.test(infos.comment)) {
+      return result.replace(/成功/, '命中！');
+    }
+    return result;
+  },
+};
