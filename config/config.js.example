@@ -7,7 +7,7 @@ const CONFIG = {
   pre_process: function(command, infos) {
     // gameTypeがエースキラージーン等の場合、ダイスのデフォルトをD10にする
     if (/(AceKillerGene|CodeLayerd|DoubleCross|GardenOrder)/i.test(infos.gameType)) {
-      return command.replace(/(^|\b)(\d+D)(D|[^\d\w]|$)/gi, "$1$210$3");
+      command = command.replace(/(^|\b)(\d+D)(D|[^\d\w]|$)/gi, "$1$210$3");
     }
     return command;
   },
@@ -15,8 +15,9 @@ const CONFIG = {
   post_process: function(result, infos) {
     // コメントに「命中判定」「攻撃」「Attack」を含む場合、結果の「成功」を「命中！」に置き換える
     if (/(命中判定|攻撃|Attack)/i.test(infos.comment)) {
-      return result.replace(/成功/, '命中！');
+      result = result.replace(/成功/, '命中！');
     }
-    return result;
+    // どどんとふ風
+    return result.replace(/＞/g, '→');
   },
 };
