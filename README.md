@@ -34,7 +34,7 @@ BCDice-API([Github](https://github.com/NKMR6194/bcdice-api "bcdice-api"))がjson
 なくても動きますがコンソールに読み込み失敗のエラーが出るのがイヤな場合、添付のconfig.js.emptyをリネームするなどして、configディレクトリにconfig.jsファイルを作ってください。またconfig.js.exampleはconfig.jsでできることの実例になります。
 
 ##その他
-シークレットダイスについて、平文で保存されているのでBCDice for Browerを起動している人が見るのは簡単です。どうせ難読化してもちょっとスクリプト書き換えれば外せるし、本質的にBot用意する人はBotでできることはなんでもできるし、ということでそのまま。
+シークレットダイスについて、平文で保存されているのでBCDiscord for Browserを起動している人が見るのは簡単です。どうせ難読化してもちょっとスクリプト書き換えれば外せるし、本質的にBot用意する人はBotでできることはなんでもできるし、ということでそのまま。
 
 ##ライセンス
 libディレクトリの外部については[GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)でライセンスします。   

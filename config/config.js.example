@@ -2,6 +2,7 @@
 const CONFIG = {
   api_url: 'http://www2.taruki.com/bcdice-api/', // BCDice-API サーバのURL
   lock_url_input: true, // URL入力欄をロックするか（configファイルでURLが指定されている場合のみ有効）
+  show_game_name: true, // Botに「～をプレイ中」を表示、複数チャンネルで違うシステムをプレイしている場合ダイスを振るたびに表示が変わります
   // ダイスコマンドの全角半角変換後、APIに送る前に行う処理を定義できる
   pre_process: function(command, infos) {
     // gameTypeがエースキラージーン等の場合、ダイスのデフォルトをD10にする
@@ -10,7 +11,7 @@ const CONFIG = {
     }
     return command;
   },
-  // ダイスコマンドのAPIからの結果を表示前に行う処理を定義できる
+  // APIからの結果を表示する前に行う処理を定義できる
   post_process: function(result, infos) {
     // コメントに「命中判定」「攻撃」「Attack」を含む場合、結果の「成功」を「命中！」に置き換える
     if (/(命中判定|攻撃|Attack)/i.test(infos.comment)) {

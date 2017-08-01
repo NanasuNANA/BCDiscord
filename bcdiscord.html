@@ -41,7 +41,7 @@ const escapeBackTick = function(str, nullSafe=true) {
     }
     return str.toString().replace(/\\/g, '\\\\').replace(/`/g, '\\`');
 }
-// マークダウンのインライン記法をエスケープ
+// Markdwonのインライン記法をエスケープ
 const escapeMarkdwon = function(str, nullSafe=true) {
     if (!str) {
         return nullSafe ? '' : str;
@@ -56,6 +56,10 @@ $(function() {
     const resultSpan = $('#result');
     const bcdiceApiUrlInput = $('#api_url');
     const botTokenInput = $('#token');
+    const testStringInput = $('#test_string');
+    const apiTestButton = $('#api_test');
+    const connectButton = $('#connect_discord');
+        
     // チャンネルごとの設定を保存
     let systemInfo = {};
     // ユーザ→配列インデックス
@@ -88,6 +92,7 @@ $(function() {
             saveData = {};
         }
     }
+    // 通知
     const notice = function(isFail=false, message='', doDesktopNotice=false) {
         if (isFail) {
             resultSpan.addClass('fail').text(message);
@@ -118,8 +123,8 @@ $(function() {
         localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
     }
     // APIのテスト
-    $('#api_test').on('click', function() {
-        const command = $('#test_string').val();
+    apiTestButton.on('click', function() {
+        const command = testStringInput.val();
         let apiUrl = getBCDiceApiUrl();
         if (!apiUrl || apiUrl == '') {
             alert('BCDice-APIのURLが必要です');
@@ -148,7 +153,7 @@ $(function() {
     });
     // Discordへの接続
     let client = null;
-    $('#connect_discord').on('click', function() {
+    connectButton.on('click', function() {
         if (client) {
             if (!confirm('切断しますか？')) {
                 return;
@@ -158,11 +163,11 @@ $(function() {
         }
         const token = botTokenInput.val();
         if (token && token != '') {
+            connectButton.attr('disabled', true);
             client = new Discord.Client({
                 token: token,
                 autorun: true
             });
-            $('#connect_discord').val('Discordから切断');
             const sendHowToUse = function(channelID) {
                 client.sendMessage({
                     to: channelID,
@@ -171,6 +176,7 @@ $(function() {
             }
             
             client.on('ready', function() {
+                connectButton.val('Discordから切断').attr('disabled', false);
                 localStorage.setItem(`${appName}_token`, token);
                 $.ajax({
                     type: 'GET',
@@ -192,7 +198,7 @@ $(function() {
             
             client.on('disconnect', function() {
                 client = null;
-                $('#connect_discord').val('Discordに接続');
+                connectButton.val('Discordに接続').attr('disabled', false);
                 failNotice(`Discord Botが切断されました`, true);
             });
             
@@ -202,6 +208,8 @@ $(function() {
                 }
                 const commands = toCommandString(message.trim()).split(/\s+/);
                 if (commands[0].toLowerCase() === commandMessage) {
+                    //TODO タイピング表示について考え中
+                    //client.simulateTyping(channelID);
                     if (commands[1]) {
                         commands[1] = commands[1].toLowerCase();
                     }
@@ -241,6 +249,9 @@ $(function() {
                             .done(saveApiUrl)
                             .done(function(data) {
                                 systemInfo[channelID] = data.systeminfo;
+                                if (CONFIG.show_game_name && data.systeminfo) {
+                                    client.setPresence({game: {name: data.systeminfo.name != 'DiceBot' ? data.systeminfo.name : null}});
+                                }
                                 client.sendMessage({
                                     to: channelID,
                                     message: `BCDice system is changed: ${escapeMarkdwon(data.systeminfo.gameType)}\n\`\`\`\n${escapeBackTick(data.systeminfo.info)}\n\`\`\``
@@ -365,6 +376,8 @@ $(function() {
                     if (!(/choice\[.*\]/i.test(commands[0]) || /^[a-zA-Z0-9!-/:-@¥[-`{-~]+$/.test(commands[0]))) {
                         return;
                     }
+                    //TODO タイピング表示について考え中
+                    //client.simulateTyping(channelID);
                     const tmp = message.split(/[\s　]+/, 2);
                     let comment = message.substr(message.indexOf(tmp[0]) + tmp[0].length);
                     comment = tmp[1] ? comment.substr(comment.indexOf(tmp[1])) : '';
@@ -388,6 +401,13 @@ $(function() {
                     .done(function(data) {
                         if (!data.ok) {
                             return;
+                        }
+                        if (CONFIG.show_game_name) {
+                            if (systemInfo[channelID]) {
+                                client.setPresence({game: {name: systemInfo[channelID].name != 'DiceBot' ? systemInfo[channelID].name : null}});
+                            } else {
+                                client.setPresence({game: {name: null}});
+                            }
                         }
                         const responsMessage = `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, Object.assign(infos, data)) : data.result)}`
                         if (data.secret) {
