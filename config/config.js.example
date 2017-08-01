@@ -10,7 +10,7 @@ const CONFIG = {
     }
     return command;
   },
-  // ダイスコマンドのAPIからの結果を表自前に行う処理を定義できる
+  // ダイスコマンドのAPIからの結果を表示前に行う処理を定義できる
   post_process: function(result, infos) {
     // コメントに「命中判定」「攻撃」「Attack」を含む場合、結果の「成功」を「命中！」に置き換える
     if (/(命中判定|攻撃|Attack)/i.test(infos.comment)) {
