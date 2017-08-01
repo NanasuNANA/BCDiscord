@@ -1,3 +1,4 @@
+// config.jsの実例、CONFIGのプロパティとして設定を定義してください。
 const CONFIG = {
   api_url: 'http://www2.taruki.com/bcdice-api/', // BCDice-API サーバのURL
   lock_url_input: true, // URL入力欄をロックするか（configファイルでURLが指定されている場合のみ有効）

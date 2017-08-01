@@ -15,6 +15,10 @@ span.fail { color: red }
 </style>
 </head>
 <script type="text/JavaScript">
+// CONFIGがなければ空のオブジェクト
+if (!window.CONFIG) {
+    window.CONFIG = {};
+}
 // 全角半角変換かつnull、undefinedを空文字に
 const toCommandString = function(str, nullSafe=true) {
     if (!str) {
@@ -46,10 +50,6 @@ const escapeMarkdwon = function(str, nullSafe=true) {
 }
 // 本体
 $(function() {
-// CONFIGがなければ空のオブジェクト
-    if (typeof CONFIG === 'undefined') {
-        var CONFIG = {};
-    }
     // 定数
     const commandMessage = 'bcdice';
     const appName = 'BCDiscord';
@@ -66,7 +66,7 @@ $(function() {
     if (CONFIG.api_url) {
         bcdiceApiUrlInput.val(CONFIG.api_url);
         if (CONFIG.lock_url_input) {
-            bcdiceApiUrlInput.attr('readonly', true)
+            bcdiceApiUrlInput.attr('readonly', true);
         };
     } else if (localStorage.getItem(`${appName}_api_url`)) {
         bcdiceApiUrlInput.val(localStorage.getItem(`${appName}_api_url`));
