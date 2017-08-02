@@ -17,7 +17,8 @@ const toCommandString = function(str, nullSafe=true) {
         .replace(/　/g, ' ')
         .replace(/[‐－―]/g, '-')
         .replace(/、/g, ',')
-        .replace(/～〜/g, '~');
+        .replace(/。/g, '.')
+        .replace(/[～〜]/g, '~');
 }
 
 // バックチックと\をエスケープ
@@ -273,12 +274,12 @@ $(function() {
                                     localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `[${escapeMarkdwon(appName)}]\n**Reset your Secret and Save data**`
+                                        message: `**>${escapeMarkdwon(user)}**\n**Reset** your Secret and Save data`
                                     });
                                 } else {
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `[${escapeMarkdwon(appName)}]\n# If you need **Reset your Secret and Save data,**\n> \`bcdice reset me\``
+                                        message: `[${escapeMarkdwon(appName)}]\n# If you need **Reset** your Secret and Save data,\n> \`bcdice reset me\``
                                     });
                                 }
                             break;
