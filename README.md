@@ -15,7 +15,7 @@ BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[�
 4. 「Create a Bot User」をクリック、Add a Bot to this App?と聞かれたらYes, do it!
 5. App Bot User欄が出てくるのでTokenの横の「click to reveal」をクリック（Public BotとRequire OAuth2 Code Grantのチェックは入れない）
 6. *出てきたTokenをローカルファイルにコピペして控えておく*、この値は人に教えてはいけないルール
-7. https://discordapp.com/oauth2/authorize?client_id=[Client IDの数字]&scope=bot&permissions=0 にアクセス
+7. `https://discordapp.com/oauth2/authorize?client_id=[Client IDの数字]&scope=bot&permissions=0` にアクセス
 8. Botを使いたいサーバーに追加。reCHAPTCHAが出てくる、あなたはロボットではありませんね
 9. *認証しました*と表示されたらOK、選択したサーバーにオフライン状態のBotがいればOK
 
