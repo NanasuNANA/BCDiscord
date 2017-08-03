@@ -31,7 +31,7 @@ BCDice-APIサーバーとして[大ちゃんさんが公開](https://www.taruki.
 
 と打ってエンター。
 
-[example]:例 `bcdice set Cthulhu`
+[^example]:例 `bcdice set Cthulhu`
 
 どんなシステム名が使えるか知りたい場合は
 
