@@ -43,11 +43,11 @@ BCDice-APIサーバーとして[大ちゃんさんが公開](https://www.taruki.
 なくても動きますがコンソールに読み込み失敗のエラーが出るのがイヤな場合、添付のconfig.js.emptyをリネームするなどして、configディレクトリにconfig.jsファイルを作ってください。またconfig.js.exampleはconfig.jsでできることの実例になります。
 
 ##謝辞
-discord-bcdicebotを作成された*しゅんしゅんひよこ*さん([Twitter](https://twitter.com/Shunshun94/status/880460411513982976))、Botの仕様、コマンド体系やメッセージなどはほぼそのまま参考にしています。
+discord-bcdicebotを作成された*しゅんしゅんひよこ*([Twitter](https://twitter.com/Shunshun94/status/880460411513982976))さん、Botの仕様、コマンド体系やメッセージなどはほぼそのまま参考にしています。
 「ボーンズ＆カーズ」を作成された*[Faceless](http://faceless-tools.cocolog-nifty.com/about.html)*さん、
 [どどんとふ](http://www.dodontof.com/ "どどんとふ☆えくすとり～む")組み込み用にRubyに移植された*たいたい竹流*([Twitter](https://twitter.com/torgtaitai))さん、
 BCDice-APIを作成し、jsonpに対応された*[坂田シンジ](https://sakasin.net/)*さんがいらっしゃらなければこのアプリケーション自体なかったでしょう。
-[どどんとふ公式鯖]("https://www.taruki.com/dodontof.html")やBCDice-APIサーバーを公開してくださっている*大ちゃん*さん、テストなどにも利用させていただいています。
+[どどんとふ公式鯖]("https://www.taruki.com/dodontof.html")やBCDice-APIサーバーなどを公開してくださっている*[大ちゃん](https://www.taruki.com/wp/ "大ちゃんのいろいろ雑記")*さん、テストなどにも利用させていただいています。
 
 ##その他
 * シークレットダイスは平文で保存されているのでBCDiscord for Browserを起動している人が見るのは簡単です。どうせ難読化してもちょっとスクリプト書き換えれば外せるし、本質的にBot用意する人はBotでできることはなんでもできるし、ということでそのまま。
