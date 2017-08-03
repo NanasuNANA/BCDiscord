@@ -2,9 +2,9 @@
 BCDice-API([Github](https://github.com/NKMR6194/bcdice-api "NKMR6194/bcdice-api"))がjsonpに対応していた。また[Discord](https://discordapp.com/)はWebsoket、なら両方ブラウザからアクセスできる。ということで[discord-bcdicebot](https://shunshun94.github.io/discord-bcdicebot/index.html "discord-bcdicebot")([Github](https://github.com/Shunshun94/discord-bcdicebot "Shunshun94/discord-bcdicebot"))を参考に、ブラウザで動くDiscord用ダイスボットを作成してみた。
 
 ##使い方
-BCDice-APIのURLを準備し、Discordで使いたいサーバーを立て、Discord Botを設定する必要があります（Discord自体のアカウントはあるものとする）。
+BCDice-APIのURLを用意し、Discordで使いたいサーバーを立て、Discord Botを設定する必要があります（Discord自体のアカウントはあるものとする）。
 
-###BCDice-API
+###BCDice-API URLの用意
 BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[どどんとふ](http://www.dodontof.com/ "どどんとふ＠えくすとり～む")で使用されているダイスボット）をWebから利用するAPIです。可能なら自分で用意してもいいですし、誰かが用意したものを利用することもできます。   
 BCDice-APIサーバーとして[大ちゃんさんが公開](https://www.taruki.com/wp/?p=6507)してくださっているものがあります（[Twitter](https://twitter.com/DoDontoF_Srv/status/880765000716959748)）。
 
@@ -27,11 +27,11 @@ BCDice-APIサーバーとして[大ちゃんさんが公開](https://www.taruki.
 ###ダイスを振る
 そのままでも標準DiceBotのダイスが振れます、特定のダイスボットを使用したい場合は
 
-`bcdice set [システム名]`
+`bcdice set [システム名]`[^example]
 
 と打ってエンター。
 
-例 `bcdice set Cthulhu`
+[example]:例 `bcdice set Cthulhu`
 
 どんなシステム名が使えるか知りたい場合は
 
