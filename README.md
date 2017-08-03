@@ -1,12 +1,12 @@
 #BCDiscord for Browser
-BCDice-API([Github](https://github.com/NKMR6194/bcdice-api "NKMR6194/bcdice-api"))がjsonpに対応していた。またDiscordのBotはWebsoketから叩けるので、[discord-bcdicebot](https://shunshun94.github.io/discord-bcdicebot/index.html "discord-bcdicebot")([Github](https://github.com/Shunshun94/discord-bcdicebot "Shunshun94/discord-bcdicebot"))を参考に、ブラウザで動くDiscord用ダイスボットを作成してみた。
+BCDice-API([Github](https://github.com/NKMR6194/bcdice-api "NKMR6194/bcdice-api"))がjsonpに対応していた。また[Discord](https://discordapp.com/)はWebsoket、なら両方ブラウザからアクセスできる。ということで[discord-bcdicebot](https://shunshun94.github.io/discord-bcdicebot/index.html "discord-bcdicebot")([Github](https://github.com/Shunshun94/discord-bcdicebot "Shunshun94/discord-bcdicebot"))を参考に、ブラウザで動くDiscord用ダイスボットを作成してみた。
 
 ##使い方
 BCDice-APIのURLを準備し、Discordで使いたいサーバーを立て、Discord Botを設定する必要があります（Discord自体のアカウントはあるものとする）。
 
 ###BCDice-API
-BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[どどんとふ](http://www.dodontof.com/ "どどんとふ＠えくすとり～む")で使用されているダイスボット）をWebから利用できるAPIです。   
-自分で立ててもいいですし、BCDice-APIサーバとして[大ちゃんさんが公開](https://www.taruki.com/wp/?p=6507)してくださっているものがあります（[Twitter](https://twitter.com/DoDontoF_Srv/status/880765000716959748)）。
+BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[どどんとふ](http://www.dodontof.com/ "どどんとふ＠えくすとり～む")で使用されているダイスボット）をWebから利用するAPIです。可能なら自分で用意してもいいですし、誰かが用意したものを利用することもできます。   
+BCDice-APIサーバーとして[大ちゃんさんが公開](https://www.taruki.com/wp/?p=6507)してくださっているものがあります（[Twitter](https://twitter.com/DoDontoF_Srv/status/880765000716959748)）。
 
 ###Discord Botの作成
 1. [開発者ページ](https://discordapp.com/developers/applications/me)にアクセスし、「New App」をクリック
@@ -29,7 +29,11 @@ BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[�
 
 `bcdice set [システム名]`
 
-と打ってエンター、どんなシステム名が使えるか知りたい場合は
+と打ってエンター。
+
+例 `bcdice set Cthulhu`
+
+どんなシステム名が使えるか知りたい場合は
 
 `bcdice list`
 
@@ -38,8 +42,16 @@ BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[�
 ###config.js
 なくても動きますがコンソールに読み込み失敗のエラーが出るのがイヤな場合、添付のconfig.js.emptyをリネームするなどして、configディレクトリにconfig.jsファイルを作ってください。またconfig.js.exampleはconfig.jsでできることの実例になります。
 
+##謝辞
+discord-bcdicebotを作成されたしゅんしゅんひよこさん([Twitter](https://twitter.com/Shunshun94/status/880460411513982976))、Botの仕様、コマンド体系やメッセージなどはほぼそのまま参考にしています。
+「ボーンズ＆カーズ」を作成された[Faceless](http://faceless-tools.cocolog-nifty.com/about.html)さん、
+[どどんとふ](http://www.dodontof.com/ "どどんとふ☆えくすとり～む")組み込み用にRubyに移植されたたいたい竹流([Twitter](https://twitter.com/torgtaitai))さん、
+BCDice-APIを作成し、jsonpに対応された[坂田シンジ](https://sakasin.net/)さんがいらっしゃらなければこのアプリケーション自体なかったでしょう。
+[どどんとふ公式鯖]("https://www.taruki.com/dodontof.html")やBCDice-APIサーバーを公開してくださっている大ちゃんさん、テストなどにも利用させていただいています。
+
 ##その他
-シークレットダイスは平文で保存されているのでBCDiscord for Browserを起動している人が見るのは簡単です。どうせ難読化してもちょっとスクリプト書き換えれば外せるし、本質的にBot用意する人はBotでできることはなんでもできるし、ということでそのまま。
+* シークレットダイスは平文で保存されているのでBCDiscord for Browserを起動している人が見るのは簡単です。どうせ難読化してもちょっとスクリプト書き換えれば外せるし、本質的にBot用意する人はBotでできることはなんでもできるし、ということでそのまま。
+* 「BCDice」は「ボーンズ＆カーズ」のダイス部分ってコトでいいのかな？
 
 ##ライセンス
 libディレクトリの外部については[GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)でライセンスします。   
