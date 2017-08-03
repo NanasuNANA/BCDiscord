@@ -198,14 +198,14 @@ $(function() {
                 connectButton.val('Discordに接続').attr('disabled', false);
                 failNotice(`Discord Botが切断されました`, true);
             });
+            
             client.on('message', function(user, userID, channelID, message, event) {
                 if (client.id === userID) {
                     return;
                 }
                 const commands = toCommandString(message.trim()).split(/\s+/);
-                    //TODO タイピング表示について考え中
+                if (commands[0].toLowerCase() === commandMessage) {
                     client.simulateTyping(channelID, function() {
-                    if (commands[0].toLowerCase() === commandMessage) {
                         if (commands[1]) {
                             commands[1] = commands[1].toLowerCase();
                         }
@@ -367,11 +367,13 @@ $(function() {
                             sendHowToUse(channelID);
                             break;
                         }
-                    } else {
-                        //すべてBCDice-APIに投げずにchoice[]が含まれるか英数記号以外は門前払い
-                        if (!(/choice\[.*\]/i.test(commands[0]) || /^[a-zA-Z0-9!-/:-@¥[-`{-~]+$/.test(commands[0]))) {
-                            return;
-                        }
+                    });
+                } else {
+                    // すべてBCDice-APIに投げずにchoice[]が含まれるか英数記号以外は門前払い
+                    if (!(/choice\[.*\]/i.test(commands[0]) || /^[a-zA-Z0-9!-/:-@¥[-`{-~\}]+$/.test(commands[0]))) {
+                        return;
+                    }
+                    client.simulateTyping(channelID, function() {
                         const tmp = message.split(/[\s　]+/, 2);
                         let comment = message.substr(message.indexOf(tmp[0]) + tmp[0].length);
                         comment = tmp[1] ? comment.substr(comment.indexOf(tmp[1])) : '';
@@ -425,8 +427,8 @@ $(function() {
                                 });
                             }
                         });
-                    }
-                });
+                    });
+                }
             });
         } else {
             alert('Discord Botのtokenが必要です');
