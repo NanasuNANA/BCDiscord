@@ -3,6 +3,8 @@
 if (!window.CONFIG) {
     window.CONFIG = {};
 }
+CONFIG.multiple_max = CONFIG.multiple_max || 10;
+CONFIG.command_string = CONFIG.command_string || 'bcdice';
 
 // 全角半角変換かつnull、undefinedを空文字に
 const toCommandString = function(str, nullSafe=true) {
@@ -34,13 +36,12 @@ const escapeMarkdwon = function(str, nullSafe=true) {
     if (!str) {
         return nullSafe ? '' : str;
     }
-    return escapeBackTick(str).replace(/\*/g, '\\*').replace(/_/g, '\\_').replace(/~/g, '\\~');
+    return escapeBackTick(str).replace(/\*/g, '\\*').replace(/_/g, '\\_').replace(/~/g, '\\~').replace(/:/g, '\\:');
 }
 
 // 本体
-$(function() {
+$(() => {
     // 定数
-    const commandMessage = 'bcdice';
     const appName = 'BCDiscord';
     const resultSpan = $('#result');
     const bcdiceApiUrlInput = $('#api_url');
@@ -119,7 +120,7 @@ $(function() {
     }
     
     // BCDice-APIのテスト
-    apiTestButton.on('click', function() {
+    apiTestButton.on('click', () => {
         const command = testStringInput.val();
         let apiUrl = getBCDiceApiUrl();
         if (!apiUrl || apiUrl == '') {
@@ -150,7 +151,7 @@ $(function() {
     
     // Discordへの接続
     let client = null;
-    connectButton.on('click', function() {
+    connectButton.on('click', () => {
         if (client) {
             if (!confirm('Discordから切断しますか？')) {
                 return;
@@ -165,14 +166,14 @@ $(function() {
                 token: token,
                 autorun: true
             });
-            const sendHowToUse = function(channelID) {
+            const sendHowToUse = (channelID) => {
                 client.sendMessage({
                     to: channelID,
-                    message: "**How to use**\n# Show dice bot list\n> \`bcdice list\`\n# Change dice bot\n> \`bcdice set SYSTEM_NAME\`\n# Show Dice bot help\n> \`bcdice help SYSTEM_NAME\`\n# Show current Status\n> \`bcdice status\`\n# Reset Your Secret and Save data\n> \`bcdice reset me\`"
+                    message: `**How to use**\n# Show dice bot list\n> \`${CONFIG.command_string} list\`\n# Change dice bot\n> \`${CONFIG.command_string} set SYSTEM_NAME\`\n# Show Dice bot help\n> \`${CONFIG.command_string} help SYSTEM_NAME\`\n# Show current Status\n> \`${CONFIG.command_string} status\`\n# Reset Your Secret and Save data\n> \`${CONFIG.command_string} reset me\``
                 });
-            }
+            };
             
-            client.on('ready', function() {
+            client.on('ready', () => {
                 connectButton.val('Discordから切断').attr('disabled', false);
                 localStorage.setItem(`${appName}_token`, token);
                 $.ajax({
@@ -181,31 +182,31 @@ $(function() {
                     dataType: 'jsonp'
                 })
                 .done(saveApiUrl)
-                .done(function(data) {
+                .done((data) => {
                     gameListLowerCaseTo = {};
                     for (let gameType of data.systems) {
                         gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
                     }
                     doneNotice(`Discord Bot(${client.username})が接続しました、BCDice-APIのテストに成功しました`);
                 })
-                .fail(function() {
+                .fail(() => {
                     failNotice(`Discord Bot(${client.username})が接続しましたが、BCDice-APIのテストに失敗しました`);
                 });
             });
             
-            client.on('disconnect', function() {
+            client.on('disconnect', () => {
                 client = null;
                 connectButton.val('Discordに接続').attr('disabled', false);
                 failNotice(`Discord Botが切断されました`, true);
             });
             
-            client.on('message', function(user, userID, channelID, message, event) {
+            client.on('message', (user, userID, channelID, message, event) => {
                 if (client.id === userID) {
                     return;
                 }
                 const commands = toCommandString(message.trim()).split(/\s+/);
-                if (commands[0].toLowerCase() === commandMessage) {
-                    client.simulateTyping(channelID, function() {
+                if (commands[0].toLowerCase() === CONFIG.command_string.toLowerCase()) {
+                    client.simulateTyping(channelID, () => {
                         if (commands[1]) {
                             commands[1] = commands[1].toLowerCase();
                         }
@@ -217,7 +218,7 @@ $(function() {
                                 dataType: 'jsonp'
                             })
                             .done(saveApiUrl)
-                            .done(function(data) {
+                            .done((data) => {
                                 gameListLowerCaseTo = {};
                                 for (let gameType of data.systems) {
                                     gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
@@ -227,10 +228,10 @@ $(function() {
                                     message: `[DiceBot List]\n\`\`\`\n${escapeBackTick(data.systems.join("\n"))}\n\`\`\``
                                 });
                             })
-                            .fail(function() {
+                            .fail(() => {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `**BCDice-API Connection Failed**`
+                                    message: `[${appName}]\n**BCDice-API Connection Failed**`
                                 });
                             });
                             break;
@@ -243,7 +244,7 @@ $(function() {
                                     dataType: 'jsonp'
                                 })
                                 .done(saveApiUrl)
-                                .done(function(data) {
+                                .done((data) => {
                                     systemInfo[channelID] = data.systeminfo;
                                     if (CONFIG.show_game_name && data.systeminfo) {
                                         client.setPresence({game: {name: data.systeminfo.name != 'DiceBot' ? data.systeminfo.name : null}});
@@ -264,7 +265,7 @@ $(function() {
                             } else {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[ERROR] When you want to change dice system\n        *bcdice set SYSTEM_NAME*\nExample \`bcdice set AceKillerGene\``
+                                    message: `[ERROR] When you want to change dice system\n        *${CONFIG.command_string} set SYSTEM_NAME*\nExample \`${CONFIG.command_string} set AceKillerGene\``
                                 });
                             }
                             break;
@@ -279,7 +280,7 @@ $(function() {
                                 } else {
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `[${escapeMarkdwon(appName)}]\n# If you need **Reset** your Secret and Save data,\n> \`bcdice reset me\``
+                                        message: `[${escapeMarkdwon(appName)}]\n# If you need **Reset** your Secret and Save data,\n> \`${CONFIG.command_string} reset me\``
                                     });
                                 }
                             break;
@@ -287,7 +288,7 @@ $(function() {
                             if ($.isNumeric(commands[2]) && saveData[userID] && saveData[userID][commands[2] - 1]) {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: saveData[userID][commands[2] - 1]
+                                    message: `**>${escapeMarkdwon(user)}**\n${saveData[userID][commands[2] - 1]}`
                                 });
                             } else {
                                 client.sendMessage({
@@ -305,13 +306,13 @@ $(function() {
                                     dataType: 'jsonp'
                                 })
                                 .done(saveApiUrl)
-                                .done(function(data) {
+                                .done((data) => {
                                     client.sendMessage({
                                         to: channelID,
                                         message: `[${escapeMarkdwon(data.systeminfo.gameType)}]\n\`\`\`\n${escapeBackTick(data.systeminfo.info)}\n\`\`\``
                                     });
                                 })
-                                .fail(function() {
+                                .fail(() => {
                                     //TODO 接続失敗を考慮
                                     client.sendMessage({
                                         to: channelID,
@@ -334,7 +335,7 @@ $(function() {
                                 dataType: 'jsonp'
                             })
                             .done(saveApiUrl)
-                            .done(function(data) {
+                            .done((data) => {
                                 client.sendMessage({
                                     to: channelID,
                                     message: `[${escapeMarkdwon(appName)}] for ${escapeMarkdwon(getBCDiceApiUrl())} : ${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}(v.${escapeMarkdwon(data.bcdice)})`
@@ -353,13 +354,13 @@ $(function() {
                                 const length = saveData[userID].push(saveMessage);
                                 client.sendMessage({
                                     to: userID,
-                                    message: `To recall this,\n\`bcdice load ${length}\`\n${saveMessage}`
+                                    message: `To recall this,\n\`${CONFIG.command_string} load ${length}\`\n${saveMessage}`
                                 });
                                 localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                             } else {
                                 client.sendMessage({
                                     to: userID,
-                                    message: `[ERROR] When you want to save Message\n        *bcdice save SAVEING MESSAGE*\nExample \`bcdice save I love You.\``
+                                    message: `[ERROR] When you want to save Message\n        *${CONFIG.command_string} save SAVEING MESSAGE*\nExample \`${CONFIG.command_string} save I love You.\``
                                 });
                             }
                             break;
@@ -369,35 +370,64 @@ $(function() {
                         }
                     });
                 } else {
-                    // すべてBCDice-APIに投げずにchoice[]が含まれるか英数記号以外は門前払い
-                    if (!(/choice\[.*\]/i.test(commands[0]) || /^[a-zA-Z0-9!-/:-@¥[-`{-~\}]+$/.test(commands[0]))) {
+                    // 複数回か？
+                    let count = 1;
+                    let isMultiple = false;
+                    if ($.isNumeric(commands[0])) {
+                        // コマンドの先頭を取り除く
+                        count = parseInt(commands.shift(), 10);
+                        isMultiple = true;
+                    }
+                    // すべてBCDice-APIに投げずに回数が1回未満かchoice[]が含まれるか英数記号以外は門前払い
+                    if (!commands[0] || count < 1 || !(/choice\[.*\]/i.test(commands[0]) || /^[a-zA-Z0-9!-/:-@¥[-`{-~\}]+$/.test(commands[0]))) {
                         return;
                     }
-                    client.simulateTyping(channelID, function() {
-                        const tmp = message.split(/[\s　]+/, 2);
-                        let comment = message.substr(message.indexOf(tmp[0]) + tmp[0].length);
-                        comment = tmp[1] ? comment.substr(comment.indexOf(tmp[1])) : '';
+                    client.simulateTyping(channelID, () => {
+                        // 回数が最大を超える
+                        if (count > CONFIG.multiple_max + 0) {
+                            client.sendMessage({
+                                to: channelID,
+                                message: `**>${escapeMarkdwon(user)}**\nYour multiple roll is too many times (max=${CONFIG.multiple_max}).`
+                            });
+                            return;
+                        }
+                        let raw_command = '';
+                        let comment = '';
+                        if (isMultiple) {
+                            const tmp = message.split(/[\s　]+/, 3);
+                            comment = message.substr(message.indexOf(tmp[0]) + tmp[0].length);
+                            comment = comment.substr(message.indexOf(tmp[1]) + tmp[1].length);
+                            comment = tmp[2] ? comment.substr(comment.indexOf(tmp[2])) : '';
+                            raw_command = tmp[1];
+                        } else {
+                            const tmp = message.split(/[\s　]+/, 2);
+                            comment = message.substr(message.indexOf(tmp[0]) + tmp[0].length);
+                            comment = tmp[1] ? comment.substr(comment.indexOf(tmp[1])) : '';
+                            raw_command = tmp[0];
+                        }
                         // 前処理、後処理に渡す情報
-                        const infos = Object.assign({command: commands[0], raw_command: tmp[0], comment: comment}, systemInfo[channelID] || {});
+                        const infos = Object.assign({command: commands[0], raw_command: raw_command, comment: comment}, systemInfo[channelID] || {});
                         if (infos.prefixs) {
                             infos.prefixs = [].concat(infos.prefixs); //変更防止
                         }
                         // 後方互換
                         const preProcess = CONFIG.pre_process || CONFIG.dice_command_post_process;
-                        $.ajax({
-                            type: 'GET',
-                            url: getBCDiceApiUrl('/v1/diceroll'),
-                            data: {
-                                system: systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot',
-                                command: preProcess ? preProcess(commands[0], infos) : commands[0]
-                            },
-                            dataType: 'jsonp'
-                        })
+                        // API接続
+                        const rolls = [];
+                        for (let i = 0; i < count; i++) {
+                            rolls.push($.ajax({
+                                type: 'GET',
+                                url: getBCDiceApiUrl('/v1/diceroll'),
+                                data: {
+                                    system: systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot',
+                                    command: preProcess ? preProcess(commands[0], Object.assign({index: i + 1}, infos)) : commands[0]
+                                },
+                                dataType: 'jsonp'
+                            }));
+                        }
+                        $.when.apply($, rolls)
                         .done(saveApiUrl)
-                        .done(function(data) {
-                            if (!data.ok) {
-                                return;
-                            }
+                        .done(function() {
                             if (CONFIG.show_game_name) {
                                 if (systemInfo[channelID]) {
                                     client.setPresence({game: {name: systemInfo[channelID].name != 'DiceBot' ? systemInfo[channelID].name : null}});
@@ -405,25 +435,39 @@ $(function() {
                                     client.setPresence({game: {name: null}});
                                 }
                             }
-                            const responsMessage = `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, Object.assign(infos, data)) : data.result)}`
-                            if (data.secret) {
+                            const responsMessages = [];
+                            let isSecret = false;
+                            for (let i = 0; i < arguments.length; i++) {
+                                let data = count > 1 ? arguments[i][0] : arguments[0];
+                                responsMessages.push(`${isMultiple ? '#' + (i+1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, Object.assign(infos, data)) : data.result)}`);
+                                isSecret = data.secret;
+                                if (count === 1) {
+                                    break;
+                                }
+                            }
+                            if (isSecret) {
                                 if (!saveData[userID]) {
                                     saveData[userID] = [];
                                 }
-                                const length = saveData[userID].push(responsMessage);
+                                const indexes = [];
+                                for (let i = 0; i < responsMessages.length; i++) {
+                                    indexes.push(saveData[userID].push(responsMessages[i]));
+                                }
+                                const channelMessages = indexes.map((e, i) => `${isMultiple ? '#' + (i+1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}: [Secret Dice (Index = ${e})]`);
+                                const userMessages = indexes.map((e, i) => `> \`${CONFIG.command_string} load ${e}\`\n${responsMessages[i]}`);
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `**>${escapeMarkdwon(user)}**\n${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}: [Secret Dice (Index = ${escapeMarkdwon(length)})]`
+                                    message: `**>${escapeMarkdwon(user)}**\n${channelMessages.join("\n")}`
                                 });
                                 client.sendMessage({
                                     to: userID,
-                                    message: `To recall this,\n\`bcdice load ${length}\`\n${responsMessage}`
+                                    message: `To recall this,\n${userMessages.join("\n")}`
                                 });
                                 localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                             } else {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: responsMessage
+                                    message: `**>${escapeMarkdwon(user)}**\n${responsMessages.join("\n")}`
                                 });
                             }
                         });
