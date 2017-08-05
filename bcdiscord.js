@@ -406,7 +406,7 @@ $(() => {
                             raw_command = tmp[0];
                         }
                         // 前処理、後処理に渡す情報
-                        const infos = Object.assign({command: commands[0], raw_command: raw_command, comment: comment}, systemInfo[channelID] || {});
+                        const infos = Object.assign({command: commands[0], raw_command: raw_command, comment: comment, is_multiple: isMultiple, max_index: count}, systemInfo[channelID] || {});
                         if (infos.prefixs) {
                             infos.prefixs = [].concat(infos.prefixs); //変更防止
                         }
@@ -439,7 +439,7 @@ $(() => {
                             let isSecret = false;
                             for (let i = 0; i < arguments.length; i++) {
                                 let data = count > 1 ? arguments[i][0] : arguments[0];
-                                responsMessages.push(`${isMultiple ? '#' + (i+1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, Object.assign(infos, data)) : data.result)}`);
+                                responsMessages.push(`${isMultiple ? '#' + (i + 1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, Object.assign({index: i + 1}, infos, data)) : data.result)}`);
                                 isSecret = data.secret;
                                 if (count === 1) {
                                     break;
@@ -453,8 +453,8 @@ $(() => {
                                 for (let i = 0; i < responsMessages.length; i++) {
                                     indexes.push(saveData[userID].push(responsMessages[i]));
                                 }
-                                const channelMessages = indexes.map((e, i) => `${isMultiple ? '#' + (i+1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}: [Secret Dice (Index = ${e})]`);
-                                const userMessages = indexes.map((e, i) => `> \`${CONFIG.command_string} load ${e}\`\n${responsMessages[i]}`);
+                                const channelMessages = indexes.map((e, i) => `${isMultiple ? '#' + (i + 1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}: [Secret Dice (Index = ${e})]`);
+                                const userMessages = indexes.map((e, i) => `${responsMessages[i]}\n> \`${CONFIG.command_string} load ${e}\``);
                                 client.sendMessage({
                                     to: channelID,
                                     message: `**>${escapeMarkdwon(user)}**\n${channelMessages.join("\n")}`
