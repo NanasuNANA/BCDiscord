@@ -6,6 +6,24 @@ if (!window.CONFIG) {
 CONFIG.multiple_max = CONFIG.multiple_max || 10;
 CONFIG.command_string = CONFIG.command_string || 'bcdice';
 
+// 定数
+const appName = 'BCDiscord';
+const appVersion = '0.9.0';
+
+// チャンネルごとの設定を保存
+let systemInfo = {};
+// ユーザ→配列インデックス
+let saveData = {};
+// ゲームリストの大文字小文字変換用
+let gameListLowerCaseTo = {};
+
+let resultSpan;
+let bcdiceApiUrlInput;
+let botTokenInput;
+let testStringInput;
+let apiTestButton;
+let connectButton;
+
 // 全角半角変換かつnull、undefinedを空文字に
 const toCommandString = function(str, nullSafe=true) {
     if (!str) {
@@ -40,50 +58,7 @@ const escapeMarkdwon = function(str, nullSafe=true) {
 }
 
 // 本体
-$(() => {
-    // 定数
-    const appName = 'BCDiscord';
-    const resultSpan = $('#result');
-    const bcdiceApiUrlInput = $('#api_url');
-    const botTokenInput = $('#token');
-    const testStringInput = $('#test_string');
-    const apiTestButton = $('#api_test');
-    const connectButton = $('#connect_discord');
-    
-    // チャンネルごとの設定を保存
-    let systemInfo = {};
-    // ユーザ→配列インデックス
-    let saveData = {};
-    // ゲームリストの大文字小文字変換用
-    let gameListLowerCaseTo = {};
-    
-    // ローカルストレージから復元
-    if (CONFIG.api_url) {
-        bcdiceApiUrlInput.val(CONFIG.api_url);
-        if (CONFIG.lock_url_input) {
-            bcdiceApiUrlInput.attr('readonly', true);
-        };
-    } else if (localStorage.getItem(`${appName}_api_url`)) {
-        bcdiceApiUrlInput.val(localStorage.getItem(`${appName}_api_url`));
-    }
-    if (localStorage.getItem(`${appName}_token`)) {
-        botTokenInput.val(localStorage.getItem(`${appName}_token`));
-    }
-    if (localStorage.getItem(`${appName}_systemInfo`)) {
-        try {
-            systemInfo = JSON.parse(localStorage.getItem(`${appName}_systemInfo`));
-        } catch (e) {
-            systemInfo = {};
-        }
-    }
-    if (localStorage.getItem(`${appName}_saveData`)) {
-        try {
-            saveData = JSON.parse(localStorage.getItem(`${appName}_saveData`));
-        } catch(e) {
-            saveData = {};
-        }
-    }
-    
+const main = function() {
     // 通知
     const notice = function(isFail=false, message='', doDesktopNotice=false) {
         if (isFail) {
@@ -285,17 +260,24 @@ $(() => {
                                 }
                             break;
                         case 'load':
-                            if ($.isNumeric(commands[2]) && saveData[userID] && saveData[userID][commands[2] - 1]) {
-                                client.sendMessage({
-                                    to: channelID,
-                                    message: `**>${escapeMarkdwon(user)}**\n${saveData[userID][commands[2] - 1]}`
-                                });
+                            let loadedMessage;
+                            if (commands.length >= 3) {
+                                const loadData = [];
+                                for (let i = 2; i < commands.length; i++) {
+                                    if ($.isNumeric(commands[i]) && saveData[userID] && saveData[userID][commands[i] - 1]) {
+                                        loadData.push(saveData[userID][commands[i] - 1]);
+                                    } else {
+                                        loadData.push(`*Not found (index = ${escapeMarkdwon(commands[i])})*`);
+                                    }
+                                }
+                                loadedMessage = `**>${escapeMarkdwon(user)}**\n${loadData.join("\n")}`;
                             } else {
-                                client.sendMessage({
-                                    to: channelID,
-                                    message: `Not found (index = ${escapeMarkdwon(commands[2])})`
-                                });
+                                loadedMessage = `[${escapeMarkdwon(appName)}]\n# If you need Load Secret and Save data,\n> \`${CONFIG.command_string} load [Index] [and more Index ...]\``
                             }
+                            client.sendMessage({
+                                to: channelID,
+                                message: loadedMessage
+                            });
                             break;
                         case 'help':
                             if (commands.length > 2) {
@@ -391,22 +373,22 @@ $(() => {
                             });
                             return;
                         }
-                        let raw_command = '';
+                        let rawCommand = '';
                         let comment = '';
                         if (isMultiple) {
                             const tmp = message.split(/[\s　]+/, 3);
                             comment = message.substr(message.indexOf(tmp[0]) + tmp[0].length);
                             comment = comment.substr(message.indexOf(tmp[1]) + tmp[1].length);
                             comment = tmp[2] ? comment.substr(comment.indexOf(tmp[2])) : '';
-                            raw_command = tmp[1];
+                            rawCommand = tmp[1];
                         } else {
                             const tmp = message.split(/[\s　]+/, 2);
                             comment = message.substr(message.indexOf(tmp[0]) + tmp[0].length);
                             comment = tmp[1] ? comment.substr(comment.indexOf(tmp[1])) : '';
-                            raw_command = tmp[0];
+                            rawCommand = tmp[0];
                         }
                         // 前処理、後処理に渡す情報
-                        const infos = Object.assign({command: commands[0], raw_command: raw_command, comment: comment, is_multiple: isMultiple, max_index: count}, systemInfo[channelID] || {});
+                        const infos = Object.assign({command: commands[0], raw_command: rawCommand, comment: comment, is_multiple: isMultiple, max_index: count}, systemInfo[channelID] || {});
                         if (infos.prefixs) {
                             infos.prefixs = [].concat(infos.prefixs); //変更防止
                         }
@@ -480,4 +462,4 @@ $(() => {
             return;
         }
     });
-});
+}

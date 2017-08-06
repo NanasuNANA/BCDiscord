@@ -7,6 +7,46 @@
 <script type="text/JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script type="text/JavaScript" src="config/config.js"></script>
 <script type="text/JavaScript" src="bcdiscord.js"></script>
+<script type="text/JavaScript">
+$(() => {
+    // UI
+    resultSpan = $('#result');
+    bcdiceApiUrlInput = $('#api_url');
+    botTokenInput = $('#token');
+    testStringInput = $('#test_string');
+    apiTestButton = $('#api_test');
+    connectButton = $('#connect_discord');
+    
+    // ローカルストレージから復元
+    if (CONFIG.api_url) {
+        bcdiceApiUrlInput.val(CONFIG.api_url);
+        if (CONFIG.lock_url_input) {
+            bcdiceApiUrlInput.attr('readonly', true);
+        };
+    } else if (localStorage.getItem(`${appName}_api_url`)) {
+        bcdiceApiUrlInput.val(localStorage.getItem(`${appName}_api_url`));
+    }
+    if (localStorage.getItem(`${appName}_token`)) {
+        botTokenInput.val(localStorage.getItem(`${appName}_token`));
+    }
+    if (localStorage.getItem(`${appName}_systemInfo`)) {
+        try {
+            systemInfo = JSON.parse(localStorage.getItem(`${appName}_systemInfo`));
+        } catch (e) {
+            systemInfo = {};
+        }
+    }
+    if (localStorage.getItem(`${appName}_saveData`)) {
+        try {
+            saveData = JSON.parse(localStorage.getItem(`${appName}_saveData`));
+        } catch(e) {
+            saveData = {};
+        }
+    }
+    // main
+    main();
+});
+</script>
 <style type="text/css">
 body {max-width: 700px}
 span.fail { color: red }
