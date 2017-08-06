@@ -27,13 +27,13 @@ BCDice-APIサーバーとして[大ちゃんさんが公開](https://www.taruki.
 ###ダイスを振る
 そのままでも標準DiceBotのダイスが振れます、特定のダイスボットを使用したい場合は
 
-`bcdice set [システム名]`
+`bcdice set [ダイスボット名]`
 
 と打ってエンター[^example]。
 
-[^example]:例 `bcdice set Cthulhu`
+[^example]:例: `bcdice set Cthulhu`
 
-どんなシステム名が使えるか知りたい場合は
+どんなダイスボット名が使えるか知りたい場合は
 
 `bcdice list`
 
