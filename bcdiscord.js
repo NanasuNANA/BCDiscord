@@ -161,6 +161,8 @@ const main = function() {
                     gameListLowerCaseTo = {};
                     for (let gameType of data.systems) {
                         gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
+                        gameListLowerCaseTo[gameType.replace(/\s+/g, '').toLowerCase()] = gameType;
+                        gameListLowerCaseTo[gameType.replace(/\s+/g, '').replace(/\&/g, 'And').toLowerCase()] = gameType;
                     }
                     doneNotice(`Discord Bot(${client.username})が接続しました、BCDice-APIのテストに成功しました`);
                 })
@@ -197,6 +199,8 @@ const main = function() {
                                 gameListLowerCaseTo = {};
                                 for (let gameType of data.systems) {
                                     gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
+                                    gameListLowerCaseTo[gameType.replace(/\s+/g, '').toLowerCase()] = gameType;
+                                    gameListLowerCaseTo[gameType.replace(/\s+/g, '').replace(/\&/g, 'And').toLowerCase()] = gameType;
                                 }
                                 client.sendMessage({
                                     to: channelID,
@@ -212,10 +216,11 @@ const main = function() {
                             break;
                         case 'set':
                             if (commands.length > 2) {
+                                
                                 $.ajax({
                                     type: 'GET',
                                     url: getBCDiceApiUrl('/v1/systeminfo'),
-                                    data: {system: gameListLowerCaseTo[commands[2].toLowerCase()] || commands[2]},
+                                    data: {system: gameListLowerCaseTo[commands.slice(2).join('').toLowerCase()] || commands.slice(2).join(' ')},
                                     dataType: 'jsonp'
                                 })
                                 .done(saveApiUrl)
@@ -234,7 +239,7 @@ const main = function() {
                                     //TODO 接続失敗を考慮
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `[${appName}] ダイスボット「${escapeMarkdwon(commands[2])}」が見つかりません。`
+                                        message: `[${appName}] ダイスボット「${escapeMarkdwon(commands.slice(2).join(' '))}」が見つかりません。`
                                     });
                                 });
                             } else {
@@ -272,7 +277,7 @@ const main = function() {
                                 }
                                 loadedMessage = `**>${escapeMarkdwon(user)}**\n${loadData.join("\n")}`;
                             } else {
-                                loadedMessage = `[${escapeMarkdwon(appName)}]\n# あなたのシークレットダイスやセーブしたメッセージをロードしたい場合、\n> \`${CONFIG.command_string} load [Index] [Indexはスペース区切りで複数記述できます]\``
+                                loadedMessage = `[${appName}]\n# あなたのシークレットダイスやセーブしたメッセージをロードしたい場合、\n> \`${CONFIG.command_string} load [Index] [Indexはスペース区切りで複数記述できます]\``
                             }
                             client.sendMessage({
                                 to: channelID,
@@ -284,7 +289,7 @@ const main = function() {
                                 $.ajax({
                                     type: 'GET',
                                     url: getBCDiceApiUrl('/v1/systeminfo'),
-                                    data: {system: gameListLowerCaseTo[commands[2].toLowerCase()] || commands[2]},
+                                    data: {system: gameListLowerCaseTo[commands.slice(2).join('').toLowerCase()] || commands.slice(2).join(' ')},
                                     dataType: 'jsonp'
                                 })
                                 .done(saveApiUrl)
@@ -298,7 +303,7 @@ const main = function() {
                                     //TODO 接続失敗を考慮
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `[${escapeMarkdwon(commands[2])}]\ダイスボット「${escapeMarkdwon(commands[2])}」が見つかりません。`
+                                        message: `[${appName}]\ダイスボット「${escapeMarkdwon(commands.slice(2).join(' '))}」が見つかりません。`
                                     });
                                 });
                             } else if (systemInfo[channelID]) {
