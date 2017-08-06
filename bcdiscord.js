@@ -144,7 +144,7 @@ const main = function() {
             const sendHowToUse = (channelID) => {
                 client.sendMessage({
                     to: channelID,
-                    message: `**How to use**\n# Show dice bot list\n> \`${CONFIG.command_string} list\`\n# Change dice bot\n> \`${CONFIG.command_string} set SYSTEM_NAME\`\n# Show Dice bot help\n> \`${CONFIG.command_string} help SYSTEM_NAME\`\n# Show current Status\n> \`${CONFIG.command_string} status\`\n# Reset Your Secret and Save data\n> \`${CONFIG.command_string} reset me\``
+                    message: `[${appName}] **使い方**\n# 利用可能なダイスボット名の一覧\n> \`${CONFIG.command_string} list\`\n# ダイスボットの設定、変更\n> \`${CONFIG.command_string} set [ダイスボット名]\`\n# ダイスボットのヘルプを表示\n> \`${CONFIG.command_string} help [ダイスボット名]\`\n# 現在の状態（APIのURL、設定されたダイスボットとバージョン）\n> \`${CONFIG.command_string} status\`\n# あなたのセーブされたシークレットダイスとメッセージをリセット\n> \`${CONFIG.command_string} reset me\``
                 });
             };
             
@@ -200,7 +200,7 @@ const main = function() {
                                 }
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[DiceBot List]\n\`\`\`\n${escapeBackTick(data.systems.join("\n"))}\n\`\`\``
+                                    message: `[${appName}] 使用可能なダイスボットの一覧\n\`\`\`\n${escapeBackTick(data.systems.join("\n"))}\n\`\`\``
                                 });
                             })
                             .fail(() => {
@@ -226,7 +226,7 @@ const main = function() {
                                     }
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `BCDice system is changed: ${escapeMarkdwon(data.systeminfo.gameType)}\n\`\`\`\n${escapeBackTick(data.systeminfo.info)}\n\`\`\``
+                                        message: `[${appName}] ダイスボットを${escapeMarkdwon(data.systeminfo.name)}に設定しました。\n\`\`\`\n${escapeBackTick(data.systeminfo.info)}\n\`\`\``
                                     });
                                     localStorage.setItem(`${appName}_systemInfo`, JSON.stringify(systemInfo));
                                 })
@@ -234,13 +234,13 @@ const main = function() {
                                     //TODO 接続失敗を考慮
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `[${escapeMarkdwon(commands[2])}]\nSystem '${escapeMarkdwon(commands[2])}' is not found`
+                                        message: `[${appName}] ダイスボット「${escapeMarkdwon(commands[2])}」が見つかりません。`
                                     });
                                 });
                             } else {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[ERROR] When you want to change dice system\n        *${CONFIG.command_string} set SYSTEM_NAME*\nExample \`${CONFIG.command_string} set AceKillerGene\``
+                                    message: `[${appName}] ダイスボットを設定、変更したい場合、\`${CONFIG.command_string} set [ダイスボット名]\`*\n例：\`${CONFIG.command_string} set AceKillerGene\``
                                 });
                             }
                             break;
@@ -250,12 +250,12 @@ const main = function() {
                                     localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `**>${escapeMarkdwon(user)}**\n**Reset** your Secret and Save data`
+                                        message: `**>${escapeMarkdwon(user)}**\nあなたのシークレットダイスとセーブしたメッセージをリセットしました。`
                                     });
                                 } else {
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `[${escapeMarkdwon(appName)}]\n# If you need **Reset** your Secret and Save data,\n> \`${CONFIG.command_string} reset me\``
+                                        message: `[${appName}]\n# あなたのシークレットダイスとセーブしたメッセージをリセットしたい場合、\n> \`${CONFIG.command_string} reset me\``
                                     });
                                 }
                             break;
@@ -267,12 +267,12 @@ const main = function() {
                                     if ($.isNumeric(commands[i]) && saveData[userID] && saveData[userID][commands[i] - 1]) {
                                         loadData.push(saveData[userID][commands[i] - 1]);
                                     } else {
-                                        loadData.push(`*Not found (index = ${escapeMarkdwon(commands[i])})*`);
+                                        loadData.push(`*見つかりませんでした (index = ${escapeMarkdwon(commands[i])})*`);
                                     }
                                 }
                                 loadedMessage = `**>${escapeMarkdwon(user)}**\n${loadData.join("\n")}`;
                             } else {
-                                loadedMessage = `[${escapeMarkdwon(appName)}]\n# If you need Load Secret and Save data,\n> \`${CONFIG.command_string} load [Index] [and more Index ...]\``
+                                loadedMessage = `[${escapeMarkdwon(appName)}]\n# あなたのシークレットダイスやセーブしたメッセージをロードしたい場合、\n> \`${CONFIG.command_string} load [Index] [Indexはスペース区切りで複数記述できます]\``
                             }
                             client.sendMessage({
                                 to: channelID,
@@ -291,20 +291,20 @@ const main = function() {
                                 .done((data) => {
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `[${escapeMarkdwon(data.systeminfo.gameType)}]\n\`\`\`\n${escapeBackTick(data.systeminfo.info)}\n\`\`\``
+                                        message: `[${escapeMarkdwon(data.systeminfo.name)}]\n\`\`\`\n${escapeBackTick(data.systeminfo.info)}\n\`\`\``
                                     });
                                 })
                                 .fail(() => {
                                     //TODO 接続失敗を考慮
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `[${escapeMarkdwon(commands[2])}]\nSystem '${escapeMarkdwon(commands[2])}' is not found`
+                                        message: `[${escapeMarkdwon(commands[2])}]\ダイスボット「${escapeMarkdwon(commands[2])}」が見つかりません。`
                                     });
                                 });
                             } else if (systemInfo[channelID]) {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${escapeMarkdwon(systemInfo[channelID].gameType)}]\n\`\`\`\n${escapeBackTick(systemInfo[channelID].info)}\n\`\`\``
+                                    message: `[${escapeMarkdwon(systemInfo[channelID].name)}]\n\`\`\`\n${escapeBackTick(systemInfo[channelID].info)}\n\`\`\``
                                 });
                             } else {
                                 sendHowToUse(channelID);
@@ -320,7 +320,7 @@ const main = function() {
                             .done((data) => {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${escapeMarkdwon(appName)}] for ${escapeMarkdwon(getBCDiceApiUrl())} : ${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}(v.${escapeMarkdwon(data.bcdice)})`
+                                    message: `[${appName}] for ${escapeMarkdwon(getBCDiceApiUrl())} : ${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}(v.${escapeMarkdwon(data.bcdice)})`
                                 });
                             });
                             break;
@@ -336,13 +336,13 @@ const main = function() {
                                 const length = saveData[userID].push(saveMessage);
                                 client.sendMessage({
                                     to: userID,
-                                    message: `To recall this,\n\`${CONFIG.command_string} load ${length}\`\n${saveMessage}`
+                                    message: `以下のメッセージを呼び出したい場合、\n${saveMessage}\n> \`${CONFIG.command_string} load ${length}\``
                                 });
                                 localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                             } else {
                                 client.sendMessage({
                                     to: userID,
-                                    message: `[ERROR] When you want to save Message\n        *${CONFIG.command_string} save SAVEING MESSAGE*\nExample \`${CONFIG.command_string} save I love You.\``
+                                    message: `[${appName}] メッセージをセーブしたい場合、\n\`${CONFIG.command_string} save [SAVEING MESSAGE]*\`\n例：\`${CONFIG.command_string} save I love You.\``
                                 });
                             }
                             break;
@@ -443,7 +443,7 @@ const main = function() {
                                 });
                                 client.sendMessage({
                                     to: userID,
-                                    message: `To recall this,\n${userMessages.join("\n")}`
+                                    message: `以下の結果を呼び出したい場合、\n${userMessages.join("\n")}`
                                 });
                                 localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                             } else {
