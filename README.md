@@ -46,7 +46,7 @@ BCDice-APIサーバーとして[大ちゃんさんが公開](https://www.taruki.
 discord-bcdicebotを作成された*しゅんしゅんひよこ*([Twitter](https://twitter.com/Shunshun94/status/880460411513982976))さん、Botの仕様、コマンド体系やメッセージなどはほぼそのまま参考にしています。
 「ボーンズ＆カーズ」を作成された*[Faceless](http://faceless-tools.cocolog-nifty.com/about.html)*さん、
 [どどんとふ](http://www.dodontof.com/ "どどんとふ☆えくすとり～む")組み込み用にRubyに移植された*たいたい竹流*([Twitter](https://twitter.com/torgtaitai))さん、
-BCDice-APIを作成し、jsonpに対応された*[坂田シンジ](https://sakasin.net/)*さんがいらっしゃらなければこのアプリケーション自体なかったでしょう。
+BCDice-APIを作成し、jsonpに対応された*[酒田シンジ](https://sakasin.net/)*さんがいらっしゃらなければこのアプリケーション自体なかったでしょう。
 [どどんとふ公式鯖]("https://www.taruki.com/dodontof.html")やBCDice-APIサーバーなどを公開してくださっている*[大ちゃん](https://www.taruki.com/wp/ "大ちゃんのいろいろ雑記")*さん、テストなどにも利用させていただいています。
 
 ##その他
