@@ -14,7 +14,7 @@ const CONFIG = {
   pre_process: function(command, infos) {
     // gameTypeがエースキラージーン等の場合、ダイスのデフォルトをD10にする
     if (/(AceKillerGene|CodeLayerd|DoubleCross|GardenOrder)/i.test(infos.gameType)) {
-      command = command.replace(/(^|\b|S)(\d+D)(D|[^\d\w]|$)/gi, "$1$210$3");
+      command = command.replace(/(^|\b|S)(\d+D)(D|K|[^\d\w]|$)/gi, "$1$210$3");
     }
     return command;
   },

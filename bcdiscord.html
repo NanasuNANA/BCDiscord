@@ -43,6 +43,23 @@ $(() => {
             saveData = {};
         }
     }
+    
+    // ローカルストレージからの全削除
+    $('#reset_all').on('click', () => {
+        if (!confirm('保存されたすべてのデータを削除しますか？')) {
+            return false;
+        }
+        localStorage.removeItem(`${appName}_api_url`);
+        localStorage.removeItem(`${appName}_token`);
+        localStorage.removeItem(`${appName}_systemInfo`);
+        localStorage.removeItem(`${appName}_saveData`);
+        $('#main_form').get(0).reset();
+        if (CONFIG.api_url) {
+            bcdiceApiUrlInput.val(CONFIG.api_url);
+        }
+        return false;
+    });
+    
     // main
     main();
 });
@@ -57,13 +74,13 @@ span.fail { color: red }
 </head>
 <body>
 <div>
-<form onsubmit="return false;">
-Discord Bot Token: <input type="password" size="70" inputmode="verbatim" id="token" placeholder="あなたのDiscord BotのToken"><br>
+<form onsubmit="return false;" id="main_form">
+Discord Bot Token: <input type="password" size="80" inputmode="verbatim" id="token" placeholder="あなたのDiscord BotのToken"><br>
 BCDice-API URL: <input type="url" size="60" id="api_url" placeholder="BCDice-APIのURL"><br>
 <input type="text" size="40" id="test_string" inputmode="verbatim" placeholder="2D6+2>=7 など、空の場合はバージョン取得"> <input type="button" value="BCDice-APIのテスト" id="api_test"><br>
 <span id="result"></span><br>
 <input type="button" value="Discordに接続" id="connect_discord">
-<input type="reset" value="全データの削除" id="reset_all" onclick="if (confirm('保存されているすべてのデータを削除しますか？')) {localStorage.clear(); return true;} else { return false; }">
+<input type="reset" value="全データの削除" id="reset_all">
 </form>
 </div>
 </body>
