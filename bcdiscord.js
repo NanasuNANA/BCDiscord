@@ -423,35 +423,37 @@ const main = function() {
                                 }
                             }
                             const responsMessages = [];
-                            let isSecret = false;
+                            const secretResponsMessages = [];
+                            const indexes = [];
                             for (let i = 0; i < arguments.length; i++) {
                                 let data = count > 1 ? arguments[i][0] : arguments[0];
-                                responsMessages.push(`${isMultiple ? '#' + (i + 1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, Object.assign({index: i + 1}, infos, data)) : data.result)}`);
-                                isSecret = data.secret;
+                                if (data.ok) {
+                                    const responsMessage = `${isMultiple ? '#' + (i + 1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, Object.assign({index: i + 1}, infos, data)) : data.result)}`;
+                                    if (data.secret) {
+                                        if (!saveData[userID]) {
+                                            saveData[userID] = [];
+                                        }
+                                        const saveIndex = saveData[userID].push(responsMessage);
+                                        indexes.push(saveIndex);
+                                        responsMessages.push(`${isMultiple ? '#' + (i + 1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}: [Secret Dice (Index = ${saveIndex})]`);
+                                        secretResponsMessages.push(responsMessage);
+                                    } else {
+                                        responsMessages.push(responsMessage);
+                                    }
+                                }
                                 if (count === 1) {
                                     break;
                                 }
                             }
-                            if (isSecret) {
-                                if (!saveData[userID]) {
-                                    saveData[userID] = [];
-                                }
-                                const indexes = [];
-                                for (let i = 0; i < responsMessages.length; i++) {
-                                    indexes.push(saveData[userID].push(responsMessages[i]));
-                                }
-                                const channelMessages = indexes.map((e, i) => `${isMultiple ? '#' + (i + 1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}: [Secret Dice (Index = ${e})]`);
-                                const userMessages = indexes.map((e, i) => `${responsMessages[i]}\n> \`${CONFIG.command_string} load ${e}\``);
-                                client.sendMessage({
-                                    to: channelID,
-                                    message: `**>${escapeMarkdwon(user)}**\n${channelMessages.join("\n")}`
-                                });
+                            if (secretResponsMessages.length > 0) {
+                                const userMessages = indexes.map((e, i) => `\`${CONFIG.command_string} load ${e}\` > ${secretResponsMessages[i]}`);
                                 client.sendMessage({
                                     to: userID,
-                                    message: `以下の結果を呼び出したい場合、\n${userMessages.join("\n")}`
+                                    message: `シークレットダイスの結果を呼び出したい場合、\n${userMessages.join("\n")}`
                                 });
                                 localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
-                            } else {
+                            } 
+                            if (responsMessages.length > 0) {
                                 client.sendMessage({
                                     to: channelID,
                                     message: `**>${escapeMarkdwon(user)}**\n${responsMessages.join("\n")}`
