@@ -275,13 +275,15 @@ const main = function() {
                                         loadData.push(`*見つかりませんでした (index = ${escapeMarkdwon(commands[i])})*`);
                                     }
                                 }
-                                loadedMessage = `**>${escapeMarkdwon(user)}**\n${loadData.join("\n")}`;
+                                loadedMessage = loadData.join("\n");
                             } else {
                                 loadedMessage = `[${appName}]\n# あなたのシークレットダイスやセーブしたメッセージをロードしたい場合、\n> \`${CONFIG.command_string} load [Index] [Indexはスペース区切りで複数記述できます]\``
                             }
-                            client.sendMessage({
-                                to: channelID,
-                                message: loadedMessage
+                            client.getUser({userID: userID}, (err, u) => {
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `><@${u.id}>\n${loadedMessage}`
+                                });
                             });
                             break;
                         case 'help':
@@ -341,7 +343,7 @@ const main = function() {
                                 const length = saveData[userID].push(saveMessage);
                                 client.sendMessage({
                                     to: userID,
-                                    message: `以下のメッセージを呼び出したい場合、\n${saveMessage}\n> \`${CONFIG.command_string} load ${length}\``
+                                    message: `以下のメッセージを呼び出したい場合、> \`${CONFIG.command_string} load ${length}\`\n${saveMessage}`
                                 });
                                 localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                             } else {
@@ -454,9 +456,11 @@ const main = function() {
                                 localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                             } 
                             if (responsMessages.length > 0) {
-                                client.sendMessage({
-                                    to: channelID,
-                                    message: `**>${escapeMarkdwon(user)}**\n${responsMessages.join("\n")}`
+                                client.getUser({userID: userID}, (err, u) => {
+                                    client.sendMessage({
+                                        to: channelID,
+                                        message: `><@${u.id}>\n${responsMessages.join("\n")}`
+                                    });
                                 });
                             }
                         });
