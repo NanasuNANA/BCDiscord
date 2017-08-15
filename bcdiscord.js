@@ -3,8 +3,11 @@
 if (!window.CONFIG) {
     window.CONFIG = {};
 }
-CONFIG.multiple_max = CONFIG.multiple_max || 10;
-CONFIG.command_string = CONFIG.command_string || 'bcdice';
+const CURRENT_CONFIG = Object.assign({
+    multiple_max: 10,
+    command_string: 'bcdice',
+    result_at_mention: true
+}, CONFIG);
 
 // 定数
 const appName = 'BCDiscord';
@@ -23,6 +26,9 @@ let botTokenInput;
 let testStringInput;
 let apiTestButton;
 let connectButton;
+let alertMissingToken;
+let alertMissingApiUrl;
+let confirmDisconnect;
 
 // 全角半角変換かつnull、undefinedを空文字に
 const toCommandString = function(str, nullSafe=true) {
@@ -54,7 +60,12 @@ const escapeMarkdwon = function(str, nullSafe=true) {
     if (!str) {
         return nullSafe ? '' : str;
     }
-    return escapeBackTick(str).replace(/\*/g, '\\*').replace(/_/g, '\\_').replace(/~/g, '\\~').replace(/:/g, '\\:');
+    return escapeBackTick(str).replace(/\*/g, '\\*').replace(/_/g, '\\_').replace(/~/g, '\\~');
+}
+
+// CONFIGを参照しユーザへの@mentionかユーザ名を切り替える
+const userName = function(user, userID) {
+    return CURRENT_CONFIG.result_at_mention ? `<@${userID}>` : escapeMarkdwon(user);
 }
 
 // 本体
@@ -99,8 +110,7 @@ const main = function() {
         const command = testStringInput.val();
         let apiUrl = getBCDiceApiUrl();
         if (!apiUrl || apiUrl == '') {
-            alert('BCDice-APIのURLが必要です');
-            bcdiceApiUrlInput.focus();
+            alertMissingApiUrl();
             return;
         }
         let data = {};
@@ -127,16 +137,13 @@ const main = function() {
     // Discordへの接続
     let client = null;
     connectButton.on('click', () => {
-        if (client) {
-            if (!confirm('Discordから切断しますか？')) {
-                return;
-            }
-            client.disconnect();
+        if (client && client.connected) {
+            confirmDisconnect(client);
             return;
         }
         const token = botTokenInput.val();
         if (token && token != '') {
-            connectButton.attr('disabled', true);
+            connectButton.val('接続中...').button("disable");
             client = new Discord.Client({
                 token: token,
                 autorun: true
@@ -144,12 +151,12 @@ const main = function() {
             const sendHowToUse = (channelID) => {
                 client.sendMessage({
                     to: channelID,
-                    message: `[${appName}] **使い方**\n# 利用可能なダイスボット名の一覧\n> \`${CONFIG.command_string} list\`\n# ダイスボットの設定、変更\n> \`${CONFIG.command_string} set [ダイスボット名]\`\n# ダイスボットのヘルプを表示\n> \`${CONFIG.command_string} help [ダイスボット名]\`\n# 現在の状態（APIのURL、設定されたダイスボットとバージョン）\n> \`${CONFIG.command_string} status\`\n# あなたのセーブされたシークレットダイスとメッセージをリセット\n> \`${CONFIG.command_string} reset me\``
+                    message: `[${appName}] **使い方**\n# 利用可能なダイスボット名の一覧\n> \`${CURRENT_CONFIG.command_string} list\`\n# ダイスボットの設定、変更\n> \`${CURRENT_CONFIG.command_string} set [ダイスボット名]\`\n# ダイスボットのヘルプを表示\n> \`${CURRENT_CONFIG.command_string} help [ダイスボット名]\`\n# 現在の状態（APIのURL、設定されたダイスボットとバージョン）\n> \`${CURRENT_CONFIG.command_string} status\`\n# あなたのセーブされたシークレットダイスとメッセージをリセット\n> \`${CURRENT_CONFIG.command_string} reset me\``
                 });
             };
             
             client.on('ready', () => {
-                connectButton.val('Discordから切断').attr('disabled', false);
+                connectButton.val('Discordから切断').button("enable");
                 localStorage.setItem(`${appName}_token`, token);
                 $.ajax({
                     type: 'GET',
@@ -182,7 +189,7 @@ const main = function() {
                     return;
                 }
                 const commands = toCommandString(message.trim()).split(/\s+/);
-                if (commands[0].toLowerCase() === CONFIG.command_string.toLowerCase()) {
+                if (commands[0].toLowerCase() === CURRENT_CONFIG.command_string.toLowerCase()) {
                     client.simulateTyping(channelID, () => {
                         if (commands[1]) {
                             commands[1] = commands[1].toLowerCase();
@@ -204,7 +211,7 @@ const main = function() {
                                 }
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${appName}] 使用可能なダイスボットの一覧\n\`\`\`\n${escapeBackTick(data.systems.join("\n"))}\n\`\`\``
+                                    message: `[${appName}] 使用可能なダイスボット名一覧\n\`\`\`\n${escapeBackTick(data.systems.join("\n"))}\n\`\`\``
                                 });
                             })
                             .fail(() => {
@@ -226,7 +233,7 @@ const main = function() {
                                 .done(saveApiUrl)
                                 .done((data) => {
                                     systemInfo[channelID] = data.systeminfo;
-                                    if (CONFIG.show_game_name && data.systeminfo) {
+                                    if (CURRENT_CONFIG.show_game_name && data.systeminfo) {
                                         client.setPresence({game: {name: data.systeminfo.name != 'DiceBot' ? data.systeminfo.name : null}});
                                     }
                                     client.sendMessage({
@@ -245,7 +252,7 @@ const main = function() {
                             } else {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${appName}] ダイスボットを設定、変更したい場合、\`${CONFIG.command_string} set [ダイスボット名]\`*\n例：\`${CONFIG.command_string} set AceKillerGene\``
+                                    message: `[${appName}] ダイスボットを設定、変更したい場合、\`${CURRENT_CONFIG.command_string} set [ダイスボット名]\`*\n例：\`${CURRENT_CONFIG.command_string} set AceKillerGene\``
                                 });
                             }
                             break;
@@ -255,12 +262,12 @@ const main = function() {
                                     localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `**>${escapeMarkdwon(user)}**\nあなたのシークレットダイスとセーブしたメッセージをリセットしました。`
+                                        message: `**>${userName(user, userID)}**\nあなたのシークレットダイスとセーブしたメッセージをリセットしました。`
                                     });
                                 } else {
                                     client.sendMessage({
                                         to: channelID,
-                                        message: `[${appName}]\n# あなたのシークレットダイスとセーブしたメッセージをリセットしたい場合、\n> \`${CONFIG.command_string} reset me\``
+                                        message: `[${appName}]\n# あなたのシークレットダイスとセーブしたメッセージをリセットしたい場合、\n> \`${CURRENT_CONFIG.command_string} reset me\``
                                     });
                                 }
                             break;
@@ -272,18 +279,16 @@ const main = function() {
                                     if ($.isNumeric(commands[i]) && saveData[userID] && saveData[userID][commands[i] - 1]) {
                                         loadData.push(saveData[userID][commands[i] - 1]);
                                     } else {
-                                        loadData.push(`*見つかりませんでした (index = ${escapeMarkdwon(commands[i])})*`);
+                                        loadData.push(`*シークレットダイス、セーブされたメッセージが見つかりません (index = ${escapeMarkdwon(commands[i])})*`);
                                     }
                                 }
                                 loadedMessage = loadData.join("\n");
                             } else {
-                                loadedMessage = `[${appName}]\n# あなたのシークレットダイスやセーブしたメッセージをロードしたい場合、\n> \`${CONFIG.command_string} load [Index] [Indexはスペース区切りで複数記述できます]\``
+                                loadedMessage = `[${appName}]\n# あなたのシークレットダイスやセーブしたメッセージをロードしたい場合、\n> \`${CURRENT_CONFIG.command_string} load [Index] [Indexはスペース区切りで複数記述できます]\``
                             }
-                            client.getUser({userID: userID}, (err, u) => {
-                                client.sendMessage({
-                                    to: channelID,
-                                    message: `><@${u.id}>\n${loadedMessage}`
-                                });
+                            client.sendMessage({
+                                to: channelID,
+                                message: `**>${userName(user, userID)}**\n${loadedMessage}`
                             });
                             break;
                         case 'help':
@@ -343,13 +348,13 @@ const main = function() {
                                 const length = saveData[userID].push(saveMessage);
                                 client.sendMessage({
                                     to: userID,
-                                    message: `以下のメッセージを呼び出したい場合、> \`${CONFIG.command_string} load ${length}\`\n${saveMessage}`
+                                    message: `以下のメッセージを呼び出したい場合 > \`${CURRENT_CONFIG.command_string} load ${length}\`\n${saveMessage}`
                                 });
                                 localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                             } else {
                                 client.sendMessage({
                                     to: userID,
-                                    message: `[${appName}] メッセージをセーブしたい場合、\n\`${CONFIG.command_string} save [SAVEING MESSAGE]*\`\n例：\`${CONFIG.command_string} save I love You.\``
+                                    message: `[${appName}] メッセージをセーブしたい場合、\n\`${CURRENT_CONFIG.command_string} save [SAVEING MESSAGE]*\`\n例：\`${CURRENT_CONFIG.command_string} save I love You.\``
                                 });
                             }
                             break;
@@ -373,12 +378,21 @@ const main = function() {
                     }
                     client.simulateTyping(channelID, () => {
                         // 回数が最大を超える
-                        if (count > CONFIG.multiple_max + 0) {
-                            client.sendMessage({
-                                to: channelID,
-                                message: `**>${escapeMarkdwon(user)}**\nYour multiple roll is too many times (max=${CONFIG.multiple_max}).`
-                            });
-                            return;
+                        if (CURRENT_CONFIG.multiple_max != null) {
+                            if (!CURRENT_CONFIG.multiple_max || CURRENT_CONFIG.multiple_max + 0 === 0) {
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `[${appName}] 複数回ロールは無効です`
+                                });
+                                return;
+                            }
+                            if (CURRENT_CONFIG.multiple_max && count > CURRENT_CONFIG.multiple_max + 0) {
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `[${appName}] 複数回ロールの回数が多すぎます (最大${CURRENT_CONFIG.multiple_max}回)`
+                                });
+                                return;
+                            }
                         }
                         let rawCommand = '';
                         let comment = '';
@@ -400,7 +414,7 @@ const main = function() {
                             infos.prefixs = [].concat(infos.prefixs); //変更防止
                         }
                         // 後方互換
-                        const preProcess = CONFIG.pre_process || CONFIG.dice_command_post_process;
+                        const preProcess = CURRENT_CONFIG.pre_process || CURRENT_CONFIG.dice_command_post_process;
                         // API接続
                         const rolls = [];
                         for (let i = 0; i < count; i++) {
@@ -417,7 +431,7 @@ const main = function() {
                         $.when.apply($, rolls)
                         .done(saveApiUrl)
                         .done(function() {
-                            if (CONFIG.show_game_name) {
+                            if (CURRENT_CONFIG.show_game_name) {
                                 if (systemInfo[channelID]) {
                                     client.setPresence({game: {name: systemInfo[channelID].name != 'DiceBot' ? systemInfo[channelID].name : null}});
                                 } else {
@@ -430,7 +444,7 @@ const main = function() {
                             for (let i = 0; i < arguments.length; i++) {
                                 let data = count > 1 ? arguments[i][0] : arguments[0];
                                 if (data.ok) {
-                                    const responsMessage = `${isMultiple ? '#' + (i + 1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CONFIG.post_process ? CONFIG.post_process(data.result, Object.assign({index: i + 1}, infos, data)) : data.result)}`;
+                                    const responsMessage = `${isMultiple ? '#' + (i + 1) + ' ' : ''}${escapeMarkdwon(systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot')}${escapeMarkdwon(CURRENT_CONFIG.post_process ? CURRENT_CONFIG.post_process(data.result, Object.assign({index: i + 1}, infos, data)) : data.result)}`;
                                     if (data.secret) {
                                         if (!saveData[userID]) {
                                             saveData[userID] = [];
@@ -448,19 +462,17 @@ const main = function() {
                                 }
                             }
                             if (secretResponsMessages.length > 0) {
-                                const userMessages = indexes.map((e, i) => `\`${CONFIG.command_string} load ${e}\` > ${secretResponsMessages[i]}`);
+                                const userMessages = indexes.map((e, i) => `\`${CURRENT_CONFIG.command_string} load ${e}\` > ${secretResponsMessages[i]}`);
                                 client.sendMessage({
                                     to: userID,
-                                    message: `シークレットダイスの結果を呼び出したい場合、\n${userMessages.join("\n")}`
+                                    message: `シークレットダイスの結果を呼び出したい場合\n${userMessages.join("\n")}`
                                 });
                                 localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
                             } 
                             if (responsMessages.length > 0) {
-                                client.getUser({userID: userID}, (err, u) => {
-                                    client.sendMessage({
-                                        to: channelID,
-                                        message: `><@${u.id}>\n${responsMessages.join("\n")}`
-                                    });
+                                client.sendMessage({
+                                    to: channelID,
+                                    message: `**>${userName(user, userID)}**\n${escapeMarkdwon(responsMessages.join("\n"))}`
                                 });
                             }
                         });
@@ -468,8 +480,7 @@ const main = function() {
                 }
             });
         } else {
-            alert('Discord Botのtokenが必要です');
-            botTokenInput.focus();
+            alertMissingToken();
             return;
         }
     });

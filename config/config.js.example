@@ -2,18 +2,20 @@
 const CONFIG = {
   // BCDice-API サーバのURL
   api_url: 'http://www2.taruki.com/bcdice-api/',
-  // URL入力欄をロックするか（api_urlでURLが指定されている場合のみ有効）
+  // URL入力欄をロックするか（デフォルトfalse、api_urlでURLが指定されている場合のみ有効）
   lock_url_input: true,
-  // Botに「～をプレイ中」を表示、複数チャンネルで違うシステムをプレイしている場合ダイスを振るたびに表示が変わります
+  // Botに「～をプレイ中」を表示するか、複数チャンネルで違うシステムをプレイしている場合ダイスを振るたびに表示が変わります（デフォルトfalse）
   show_game_name: true,
-  // 複数回ロールの最大数（デフォルト10）
+  // ダイスロール結果を@mentionとして表示する（デフォルトtrue）
+  result_at_mention: false,
+  // 複数回ロールの最大数(デフォルト10回、0で複数回ロール不許可、nullで回数制限なし)
   multiple_max: 8,
   // コマンドを'bcdice'から変更
   command_string: 'bcd',
   // ダイスコマンドの全角半角変換後、APIに送る前に行う処理を定義できる
   pre_process: function(command, infos) {
     // gameTypeがエースキラージーン等の場合、ダイスのデフォルトをD10にする
-    if (/(AceKillerGene|CodeLayerd|DoubleCross|GardenOrder)/i.test(infos.gameType)) {
+    if (/(AceKillerGene|BladeOfArcana|CodeLayerd|DoubleCross|GardenOrder)/i.test(infos.gameType)) {
       command = command.replace(/(^|\b|S)(\d+D)(D|K|[^\d\w]|$)/gi, "$1$210$3");
     }
     return command;

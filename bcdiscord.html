@@ -3,8 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <title>BCDiscord for Browser</title>
+<!-- <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 <script type="text/JavaScript" src="lib/discord.io/index.js"></script> <!-- The discord.io client file -->
-<script type="text/JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+<script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
 <script type="text/JavaScript" src="config/config.js"></script>
 <script type="text/JavaScript" src="bcdiscord.js"></script>
 <script type="text/JavaScript">
@@ -16,6 +25,9 @@ $(() => {
     testStringInput = $('#test_string');
     apiTestButton = $('#api_test');
     connectButton = $('#connect_discord');
+    apiTestButton.button();
+    connectButton.button();
+    $('input:text, input:password, input[type=url]').button().css({font: 'inherit', color: 'black', 'text-align': 'left', cursor: 'text', 'background-color': 'transparent', 'background-image': 'none'});
     
     // ローカルストレージから復元
     if (CONFIG.api_url) {
@@ -44,19 +56,73 @@ $(() => {
         }
     }
     
+    alertMissingToken = function() {
+        $('#dialog-missing-token').dialog({
+            show: {effect: 'bounce', duration: 300},
+            hide: {effect: 'fade', duration: 300},
+            modal: true,
+            buttons: {
+                OK: function() {
+                    $(this).dialog('close');
+                    botTokenInput.focus();
+                }
+            }
+        });
+    }
+    alertMissingApiUrl = function() {
+        $('#dialog-missing-api-url').dialog({
+            show: {effect: 'bounce', duration: 300},
+            hide: {effect: 'fade', duration: 300},
+            modal: true,
+            buttons: {
+                OK: function() {
+                    $(this).dialog('close');
+                    bcdiceApiUrlInput.focus();
+                }
+            }
+        });
+    }
+    
+    confirmDisconnect = function(client) {
+        $('#confirm-disconnect').dialog({
+            show: {effect: 'fold', size: 36, duration: 300},
+            hide: {effect: 'fold', size: 36, duration: 300},
+            modal: true,
+            buttons: {
+                OK: function() {
+                    $(this).dialog('close');
+                    client.disconnect();
+                },
+                'キャンセル': function() {
+                    $(this).dialog('close');
+                }
+            }
+        });
+    }
+    
     // ローカルストレージからの全削除
     $('#reset_all').on('click', () => {
-        if (!confirm('保存されたすべてのデータを削除しますか？')) {
-            return false;
-        }
-        localStorage.removeItem(`${appName}_api_url`);
-        localStorage.removeItem(`${appName}_token`);
-        localStorage.removeItem(`${appName}_systemInfo`);
-        localStorage.removeItem(`${appName}_saveData`);
-        $('#main_form').get(0).reset();
-        if (CONFIG.api_url) {
-            bcdiceApiUrlInput.val(CONFIG.api_url);
-        }
+        $('#confirm-reset-all').dialog({
+            show: {effect: 'fold', size: 36, duration: 300},
+            hide: {effect: 'fold', size: 36, duration: 300},
+            modal: true,
+            buttons: {
+                OK: function() {
+                    $(this).dialog('close');
+                    localStorage.removeItem(`${appName}_api_url`);
+                    localStorage.removeItem(`${appName}_token`);
+                    localStorage.removeItem(`${appName}_systemInfo`);
+                    localStorage.removeItem(`${appName}_saveData`);
+                    $('#main_form').get(0).reset();
+                    if (CURRENT_CONFIG.api_url) {
+                        bcdiceApiUrlInput.val(CURRENT_CONFIG.api_url);
+                    }
+                },
+                'キャンセル': function() {
+                    $(this).dialog('close');
+                }
+            }
+        });
         return false;
     });
     
@@ -75,13 +141,17 @@ span.fail { color: red }
 <body>
 <div>
 <form onsubmit="return false;" id="main_form">
-Discord Bot Token: <input type="password" size="80" inputmode="verbatim" id="token" placeholder="あなたのDiscord BotのToken"><br>
-BCDice-API URL: <input type="url" size="60" id="api_url" placeholder="BCDice-APIのURL"><br>
+<label for="token">Discord Bot Token</label>: <input type="password" size="70" inputmode="verbatim" id="token" placeholder="あなたのDiscord BotのToken"><br>
+<label for="api_url">BCDice-API URL</label>: <input type="url" size="60" id="api_url" placeholder="BCDice-APIのURL"><br>
 <input type="text" size="40" id="test_string" inputmode="verbatim" placeholder="2D6+2>=7 など、空の場合はバージョン取得"> <input type="button" value="BCDice-APIのテスト" id="api_test"><br>
 <span id="result"></span><br>
 <input type="button" value="Discordに接続" id="connect_discord">
 <input type="reset" value="全データの削除" id="reset_all">
 </form>
 </div>
+<div id="dialog-missing-api-url" title="Error" style="display: none">BCDice-APIのURLが必要です。</div>
+<div id="dialog-missing-token" title="Error" style="display: none">Discord BotのTokenが必要です。</div>
+<div id="confirm-disconnect" title="Confirmation" style="display: none">BotをDiscordから切断しますか？</div>
+<div id="confirm-reset-all" title="Confirmation" style="display: none">保存されたすべてのデータを削除しますか？</div>
 </body>
 </html>
