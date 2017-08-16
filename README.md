@@ -58,5 +58,5 @@ libディレクトリの外部については[GPLv3](https://www.gnu.org/license
 libディレクトリ内添付のdiscord.io([Github](https://github.com/izy521/discord.io "discord.io"))についてはそちらのディレクトリやプロジェクト参照。
 
 ## プロジェクトURL
-[Github](https://github.com/NanasuNANA/BCDiscord "NanasuNANA/BCDiscord")
-[Bitbucket](https://bitbucket.org/Nanasu/bcdiscord-for-browser "BCDiscord for Browser")
+* [https://github.com/NanasuNANA/BCDiscord](https://github.com/NanasuNANA/BCDiscord "NanasuNANA/BCDiscord") (Github)
+* [https://bitbucket.org/Nanasu/bcdiscord-for-browse](https://bitbucket.org/Nanasu/bcdiscord-for-browser "BCDiscord for Browser") (Bitbucket)
