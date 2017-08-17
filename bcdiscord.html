@@ -96,7 +96,8 @@ $(() => {
                 'キャンセル': function() {
                     $(this).dialog('close');
                 }
-            }
+            },
+            open: function() { $(this).siblings('.ui-dialog-buttonpane').find('button:eq(1)').focus() }
         });
     }
     
@@ -121,7 +122,8 @@ $(() => {
                 'キャンセル': function() {
                     $(this).dialog('close');
                 }
-            }
+            },
+            open: function() { $(this).siblings('.ui-dialog-buttonpane').find('button:eq(1)').focus() }
         });
         return false;
     });
@@ -131,8 +133,10 @@ $(() => {
 });
 </script>
 <style type="text/css">
-body {max-width: 700px}
+body { max-width: 700px }
 span.fail { color: red }
+.dialog { display: flex; align-items: center }
+.dialog-icon-container { width: 32px; vertical-align: middle }
 #connect_discord { font-size: 120%; font-weight: bold; padding: 0.6em 1.2em; width: 12em }
 #reset_all { color: red; margin-top: 3.6em; float: right; font-size: 80%; background-color: transparent; border: 0px none }
 #api_url[readonly=readonly] { border: none transparent }
@@ -143,15 +147,15 @@ span.fail { color: red }
 <form onsubmit="return false;" id="main_form">
 <label for="token">Discord Bot Token</label>: <input type="password" size="70" inputmode="verbatim" id="token" placeholder="あなたのDiscord BotのToken"><br>
 <label for="api_url">BCDice-API URL</label>: <input type="url" size="60" id="api_url" placeholder="BCDice-APIのURL"><br>
-<input type="text" size="40" id="test_string" inputmode="verbatim" placeholder="2D6+2>=7 など、空の場合はバージョン取得"> <input type="button" value="BCDice-APIのテスト" id="api_test"><br>
+<input type="text" size="40" id="test_string" onkeypress="if (event.keyCode === 13) { $('#api_test').trigger('click') }" inputmode="verbatim" placeholder="2D6+2>=7 など、空の場合はバージョン取得"> <input type="button" value="BCDice-APIのテスト" id="api_test"><br>
 <span id="result"></span><br>
 <input type="button" value="Discordに接続" id="connect_discord">
 <input type="reset" value="全データの削除" id="reset_all">
 </form>
 </div>
-<div id="dialog-missing-api-url" title="Error" style="display: none">BCDice-APIのURLが必要です。</div>
-<div id="dialog-missing-token" title="Error" style="display: none">Discord BotのTokenが必要です。</div>
-<div id="confirm-disconnect" title="Confirmation" style="display: none">BotをDiscordから切断しますか？</div>
-<div id="confirm-reset-all" title="Confirmation" style="display: none">保存されたすべてのデータを削除しますか？</div>
+<div class="dialog" id="dialog-missing-api-url" title="Error" style="display: none"><span class="dialog-icon-container"><span class="ui-icon ui-icon-alert"></span></span><span class="dialog-text">BCDice-APIのURLが必要です。</span></div>
+<div class="dialog" id="dialog-missing-token" title="Error" style="display: none"><span class="dialog-icon-container"><span class="ui-icon ui-icon-alert"></span></span><span class="dialog-text">Discord BotのTokenが必要です。</span></div>
+<div class="dialog" id="confirm-disconnect" title="Confirmation" style="display: none"><span class="dialog-icon-container"><span class="ui-icon ui-icon-notice"></span></span><span class="dialog-text">BotをDiscordから切断しますか？</span></div>
+<div class="dialog" id="confirm-reset-all" title="Confirmation" style="display: none"><span class="dialog-icon-container"><span class="ui-icon ui-icon-notice"></span></span><span class="dialog-text">保存されたすべてのデータを削除しますか？</span></div>
 </body>
 </html>

@@ -11,7 +11,7 @@ const CURRENT_CONFIG = Object.assign({
 
 // 定数
 const appName = 'BCDiscord';
-const appVersion = '0.9.1';
+const appVersion = '0.9.2';
 
 // チャンネルごとの設定を保存
 let systemInfo = {};
@@ -26,6 +26,7 @@ let botTokenInput;
 let testStringInput;
 let apiTestButton;
 let connectButton;
+
 let alertMissingToken;
 let alertMissingApiUrl;
 let confirmDisconnect;
@@ -428,7 +429,7 @@ const main = function() {
                                 dataType: 'jsonp'
                             }));
                         }
-                        $.when.apply($, rolls)
+                        $.when(...rolls)
                         .done(saveApiUrl)
                         .done(function() {
                             if (CURRENT_CONFIG.show_game_name) {
