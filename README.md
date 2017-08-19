@@ -5,8 +5,15 @@ BCDice-API([Github](https://github.com/NKMR6194/bcdice-api "NKMR6194/bcdice-api"
 BCDice-APIのURLを用意し、Discordで使いたいサーバーを立て、Discord Botを設定する必要があります（Discord自体のアカウントはあるものとする）。
 
 ### BCDice-API URLの用意
-BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[どどんとふ](http://www.dodontof.com/ "どどんとふ＠えくすとり～む")で使用されているダイスボット）をWebから利用するAPIです。可能なら自分で用意してもいいですし、誰かが用意したものを利用することもできます。   
-BCDice-APIサーバーとして[大ちゃんさんが公開](https://www.taruki.com/wp/?p=6507)してくださっているものがあります（[Twitter](https://twitter.com/DoDontoF_Srv/status/880765000716959748)）。
+BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[どどんとふ](http://www.dodontof.com/ "どどんとふ＠えくすとり～む")で使用されているダイスボット）をWebから利用するAPIです。可能なら自分で用意してもいいですし、他者が用意したものを利用することもできます。   
+
+おもに試験用に
+
+[https://nana-bcdice-api.herokuapp.com/](https://nana-bcdice-api.herokuapp.com/)
+
+を設置しています。
+
+また公開のBCDice-APIサーバーとして[大ちゃんさんが設置](https://www.taruki.com/wp/?p=6507)してくださっているものがあります（[Twitter](https://twitter.com/DoDontoF_Srv/status/880765000716959748)）。
 
 ### Discord Botの作成
 1. [開発者ページ](https://discordapp.com/developers/applications/me)にアクセスし、「New App」をクリック

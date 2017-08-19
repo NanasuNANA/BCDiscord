@@ -1,7 +1,7 @@
 // config.jsの実例、CONFIGのプロパティとして設定を定義してください。
 const CONFIG = {
   // BCDice-API サーバのURL
-  api_url: 'http://www2.taruki.com/bcdice-api/',
+  api_url: 'https://nana-bcdice-api.herokuapp.com/',
   // URL入力欄をロックするか（デフォルトfalse、api_urlでURLが指定されている場合のみ有効）
   lock_url_input: true,
   // Botに「～をプレイ中」を表示するか、複数チャンネルで違うシステムをプレイしている場合ダイスを振るたびに表示が変わります（デフォルトfalse）
