@@ -473,7 +473,7 @@ const main = function() {
                             if (responsMessages.length > 0) {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `**>${userName(user, userID)}**\n${escapeMarkdwon(responsMessages.join("\n"))}`
+                                    message: `**>${userName(user, userID)}**\n${responsMessages.join("\n")}`
                                 });
                             }
                         });
