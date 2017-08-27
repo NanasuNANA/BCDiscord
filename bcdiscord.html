@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>BCDiscord for Browser</title>
-<!-- <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 <script type="text/JavaScript" src="lib/discord.io/index.js"></script> <!-- The discord.io client file -->
 <script
   src="https://code.jquery.com/jquery-3.2.1.min.js"
@@ -18,6 +16,9 @@
 <script type="text/JavaScript" src="bcdiscord.js"></script>
 <script type="text/JavaScript">
 $(() => {
+    // CSS
+    $('head title:last').after($('<link rel="stylesheet">').attr('href', `https://code.jquery.com/ui/1.12.1/themes/${$.trim(CONFIG.theme) || 'smoothness'}/jquery-ui.css`));
+    
     // UI
     resultSpan = $('#result');
     bcdiceApiUrlInput = $('#api_url');
@@ -85,8 +86,8 @@ $(() => {
     
     confirmDisconnect = function(client) {
         $('#confirm-disconnect').dialog({
-            show: {effect: 'fold', size: 36, duration: 300},
-            hide: {effect: 'fold', size: 36, duration: 300},
+            show: {effect: 'clip', duration: 300},
+            hide: {effect: 'clip', duration: 300},
             modal: true,
             buttons: {
                 OK: function() {
@@ -104,8 +105,8 @@ $(() => {
     // ローカルストレージからの全削除
     $('#reset_all').on('click', () => {
         $('#confirm-reset-all').dialog({
-            show: {effect: 'fold', size: 36, duration: 300},
-            hide: {effect: 'fold', size: 36, duration: 300},
+            show: {effect: 'clip', duration: 300},
+            hide: {effect: 'clip', duration: 300},
             modal: true,
             buttons: {
                 OK: function() {

@@ -1,5 +1,7 @@
 // config.jsの実例、CONFIGのプロパティとして設定を定義してください。
 const CONFIG = {
+  // jQuery UIのTheme名、'base', 'black-tie', 'blitzer', 'dot-luv', 'eggplant', 'pepper-grinder', 'trontastic', 'vader'等（デフォルト'smoothness'）
+  theme: 'excite-bike',
   // BCDice-API サーバのURL
   api_url: 'https://nana-bcdice-api.herokuapp.com/',
   // URL入力欄をロックするか（デフォルトfalse、api_urlでURLが指定されている場合のみ有効）
@@ -11,7 +13,7 @@ const CONFIG = {
   // 複数回ロールの最大数(デフォルト10回、0で複数回ロール不許可、nullで回数制限なし)
   multiple_max: 8,
   // コマンドを'bcdice'から変更
-  command_string: 'bcd',
+  //command_string: 'bcd',
   // ダイスコマンドの全角半角変換後、APIに送る前に行う処理を定義できる
   pre_process: function(command, infos) {
     // gameTypeがエースキラージーン等の場合、ダイスのデフォルトをD10にする

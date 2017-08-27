@@ -11,7 +11,7 @@ const CURRENT_CONFIG = Object.assign({
 
 // 定数
 const appName = 'BCDiscord';
-const appVersion = '0.9.2';
+const appVersion = '0.9.3';
 
 // チャンネルごとの設定を保存
 let systemInfo = {};
