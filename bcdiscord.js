@@ -4,6 +4,7 @@ if (!window.CONFIG) {
     window.CONFIG = {};
 }
 const CURRENT_CONFIG = Object.assign({
+    theme: 'smoothness',
     multiple_max: 10,
     command_string: 'bcdice',
     result_at_mention: true

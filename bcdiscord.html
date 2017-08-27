@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <title>BCDiscord for Browser</title>
 <script type="text/JavaScript" src="lib/discord.io/index.js"></script> <!-- The discord.io client file -->
 <script
@@ -17,7 +18,7 @@
 <script type="text/JavaScript">
 $(() => {
     // CSS
-    $('head title:last').after($('<link rel="stylesheet">').attr('href', `https://code.jquery.com/ui/1.12.1/themes/${$.trim(CONFIG.theme) || 'smoothness'}/jquery-ui.css`));
+    $('head link:last').after($('<link rel="stylesheet">').attr('href', `https://code.jquery.com/ui/1.12.1/themes/${$.trim(CURRENT_CONFIG.theme)}/jquery-ui.css`));
     
     // UI
     resultSpan = $('#result');
