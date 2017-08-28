@@ -7,12 +7,15 @@ const CURRENT_CONFIG = Object.assign({
     theme: 'smoothness',
     multiple_max: 10,
     command_string: 'bcdice',
+    use_jsonp: true,
     result_at_mention: true
 }, CONFIG);
 
 // 定数
 const appName = 'BCDiscord';
-const appVersion = '0.9.3';
+const appVersion = '0.9.4';
+
+let jsonDataType = CURRENT_CONFIG.use_jsonp ? 'jsonp' : 'json';
 
 // チャンネルごとの設定を保存
 let systemInfo = {};
@@ -129,7 +132,7 @@ const main = function() {
             type: 'GET',
             url: apiUrl,
             data: data,
-            dataType: 'jsonp'
+            dataType: jsonDataType
         })
         .done(saveApiUrl)
         .done(doneCallback)
@@ -163,7 +166,7 @@ const main = function() {
                 $.ajax({
                     type: 'GET',
                     url: getBCDiceApiUrl('/v1/systems'),
-                    dataType: 'jsonp'
+                    dataType: jsonDataType
                 })
                 .done(saveApiUrl)
                 .done((data) => {
@@ -201,7 +204,7 @@ const main = function() {
                             $.ajax({
                                 type: 'GET',
                                 url: getBCDiceApiUrl('/v1/systems'),
-                                dataType: 'jsonp'
+                                dataType: jsonDataType
                             })
                             .done(saveApiUrl)
                             .done((data) => {
@@ -230,7 +233,7 @@ const main = function() {
                                     type: 'GET',
                                     url: getBCDiceApiUrl('/v1/systeminfo'),
                                     data: {system: gameListLowerCaseTo[commands.slice(2).join('').toLowerCase()] || commands.slice(2).join(' ')},
-                                    dataType: 'jsonp'
+                                    dataType: jsonDataType
                                 })
                                 .done(saveApiUrl)
                                 .done((data) => {
@@ -299,7 +302,7 @@ const main = function() {
                                     type: 'GET',
                                     url: getBCDiceApiUrl('/v1/systeminfo'),
                                     data: {system: gameListLowerCaseTo[commands.slice(2).join('').toLowerCase()] || commands.slice(2).join(' ')},
-                                    dataType: 'jsonp'
+                                    dataType: jsonDataType
                                 })
                                 .done(saveApiUrl)
                                 .done((data) => {
@@ -328,7 +331,7 @@ const main = function() {
                             $.ajax({
                                 type: 'GET',
                                 url: getBCDiceApiUrl('/v1/version'),
-                                dataType: 'jsonp'
+                                dataType: jsonDataType
                             })
                             .done(saveApiUrl)
                             .done((data) => {
@@ -427,7 +430,7 @@ const main = function() {
                                     system: systemInfo[channelID] ? systemInfo[channelID].gameType : 'DiceBot',
                                     command: preProcess ? preProcess(commands[0], Object.assign({index: i + 1}, infos)) : commands[0]
                                 },
-                                dataType: 'jsonp'
+                                dataType: jsonDataType
                             }));
                         }
                         $.when(...rolls)
