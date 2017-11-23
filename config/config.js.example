@@ -1,3 +1,20 @@
+/*
+This file is part of BCDiscord for Browser.
+
+BCDiscord for Browser is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BCDiscord for Browser is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 // config.jsの実例、CONFIGのプロパティとして設定を定義してください。
 const CONFIG = {
   // jQuery UIのTheme名、'base', 'black-tie', 'blitzer', 'dot-luv', 'eggplant', 'pepper-grinder', 'trontastic', 'vader'等（デフォルト'smoothness'）
@@ -14,7 +31,7 @@ const CONFIG = {
   multiple_max: 8,
   // コマンドを'bcdice'から変更
   //command_string: 'bcd',
-  // ブラウザからのJSONデータの取得にjsonpを使用する（デフォルトtrue）、使用しない場合API側がCORSに対応している必要がある。
+  // ブラウザからのJSONデータの取得にjsonpを使用する（デフォルトtrue）、使用しない場合API側がCORSに対応している必要がある
   //use_jsonp: false,
   // ダイスコマンドの全角半角変換後、APIに送る前に行う処理を定義できる
   pre_process: function(command, infos) {
