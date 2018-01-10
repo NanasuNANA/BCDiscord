@@ -29,7 +29,7 @@ const CURRENT_CONFIG = Object.assign({
 
 // 定数
 const appName = 'BCDiscord';
-const appVersion = '0.9.4';
+const appVersion = '0.9.5';
 
 let jsonDataType = CURRENT_CONFIG.use_jsonp ? 'jsonp' : 'json';
 
@@ -199,10 +199,10 @@ const main = function() {
                 });
             });
             
-            client.on('disconnect', () => {
+            client.on('disconnect', (errMsg, code) => {
                 client = null;
-                connectButton.val('Discordに接続').attr('disabled', false);
-                failNotice(`Discord Botが切断されました`, true);
+                failNotice(`Discord Botが切断されました: ${code}`, true);
+                connectButton.val('Discordに接続').button("enable");
             });
             
             client.on('message', (user, userID, channelID, message, event) => {
