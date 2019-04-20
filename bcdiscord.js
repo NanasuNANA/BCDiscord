@@ -29,7 +29,7 @@ const CURRENT_CONFIG = Object.assign({
 
 // 定数
 const appName = 'BCDiscord';
-const appVersion = '0.9.5';
+const appVersion = '0.9.6';
 
 let jsonDataType = CURRENT_CONFIG.use_jsonp ? 'jsonp' : 'json';
 
@@ -87,6 +87,27 @@ const escapeMarkdwon = function(str, nullSafe=true) {
 // CONFIGを参照しユーザへの@mentionかユーザ名を切り替える
 const userName = function(user, userID) {
     return CURRENT_CONFIG.result_at_mention ? `<@${userID}>` : escapeMarkdwon(user);
+}
+
+// 長いリストを複数回に分けて投稿
+const sendList = async function(client, channelID, headline='', lines=[], maxlength=2000) {
+    let tempLines = [];
+    let length = headline.length;
+    for (let i = 0; i < lines.length; i++) {
+        tempLines.push(lines[i]);
+        length += lines[i].length;
+        if (i == (lines.length - 1) || (length + lines[i + 1].length + tempLines.length + 8) >= maxlength) {
+            await (function() {
+                return new Promise(resolve => client.sendMessage({
+                    to: channelID,
+                    message: headline + `\`\`\`\n${escapeBackTick(tempLines.join("\n"))}\n\`\`\``
+                }, () => resolve(i)));
+            })();
+            tempLines = [];
+            length = 0;
+            headline = '';
+        }
+    }
 }
 
 // 本体
@@ -172,7 +193,7 @@ const main = function() {
             const sendHowToUse = (channelID) => {
                 client.sendMessage({
                     to: channelID,
-                    message: `[${appName}] **使い方**\n# 利用可能なダイスボット名の一覧\n> \`${CURRENT_CONFIG.command_string} list\`\n# ダイスボットの設定、変更\n> \`${CURRENT_CONFIG.command_string} set [ダイスボット名]\`\n# ダイスボットのヘルプを表示\n> \`${CURRENT_CONFIG.command_string} help [ダイスボット名]\`\n# 現在の状態（APIのURL、設定されたダイスボットとバージョン）\n> \`${CURRENT_CONFIG.command_string} status\`\n# あなたのセーブされたシークレットダイスとメッセージをリセット\n> \`${CURRENT_CONFIG.command_string} reset me\``
+                    message: `[${appName}] **使い方**\n# 利用可能なダイスボット名（システムID）の一覧\n> \`${CURRENT_CONFIG.command_string} list\`\n# 使用可能なゲーム名 → ダイスボット名（システムID）一覧（API Ver. 0.6以上）\n> \`${CURRENT_CONFIG.command_string} names\`\n# 使用するダイスボットの設定、変更\n> \`${CURRENT_CONFIG.command_string} set [ダイスボット名（システムID）]\`\n# ダイスボットのヘルプを表示\n> \`${CURRENT_CONFIG.command_string} help [ダイスボット名（システムID）]\`\n# 現在の状態（APIのURL、設定されたダイスボットとバージョン）\n> \`${CURRENT_CONFIG.command_string} status\`\n# あなたのセーブされたシークレットダイスとメッセージをリセット\n> \`${CURRENT_CONFIG.command_string} reset me\``
                 });
             };
             
@@ -186,7 +207,6 @@ const main = function() {
                 })
                 .done(saveApiUrl)
                 .done((data) => {
-                    gameListLowerCaseTo = {};
                     for (let gameType of data.systems) {
                         gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
                         gameListLowerCaseTo[gameType.replace(/\s+/g, '').toLowerCase()] = gameType;
@@ -224,16 +244,47 @@ const main = function() {
                             })
                             .done(saveApiUrl)
                             .done((data) => {
-                                gameListLowerCaseTo = {};
-                                for (let gameType of data.systems) {
-                                    gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
-                                    gameListLowerCaseTo[gameType.replace(/\s+/g, '').toLowerCase()] = gameType;
-                                    gameListLowerCaseTo[gameType.replace(/\s+/g, '').replace(/\&/g, 'And').toLowerCase()] = gameType;
-                                }
+                                sendList(
+                                    client,
+                                    channelID,
+                                    `[${appName}] 使用可能なダイスボット名（システムID）一覧\n`,
+                                    data.systems.map(gameType => {
+                                        gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
+                                        gameListLowerCaseTo[gameType.replace(/\s+/g, '').toLowerCase()] = gameType;
+                                        gameListLowerCaseTo[gameType.replace(/\s+/g, '').replace(/\&/g, 'And').toLowerCase()] = gameType;
+                                        return gameType;
+                                    })
+                                );
+                            })
+                            .fail(() => {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${appName}] 使用可能なダイスボット名一覧\n\`\`\`\n${escapeBackTick(data.systems.join("\n"))}\n\`\`\``
+                                    message: `[${appName}]\n**BCDice-API Connection Failed**`
                                 });
+                            });
+                            break;
+                        case 'names':
+                            $.ajax({
+                                type: 'GET',
+                                url: getBCDiceApiUrl('/v1/names'),
+                                dataType: jsonDataType
+                            })
+                            .done(saveApiUrl)
+                            .done((data) => {
+                                sendList(
+                                    client,
+                                    channelID,
+                                    `[${appName}] 使用可能なゲーム名 → ダイスボット名（システムID）一覧\n`,
+                                    data.names.sort((v1, v2) => { if (v1.name == v2.name) return 0; return (v1.name < v2.name) ? -1 : 1 }).map(gameNames => {
+                                        gameListLowerCaseTo[gameNames.system.toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[gameNames.system.replace(/\s+/g, '').toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[gameNames.system.replace(/\s+/g, '').replace(/\&/g, 'And').toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[gameNames.name.replace(/[\s]+/g, '').toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[toCommandString(gameNames.name).replace(/[\s・]+/g, '').toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[toCommandString(gameNames.name).replace(/[\s・]+/g, '').replace(/[\&＆]/g, 'アンド').toLowerCase()] = gameNames.system;
+                                        return `${gameNames.name}  → ${gameNames.system}`;
+                                    })
+                                );
                             })
                             .fail(() => {
                                 client.sendMessage({
@@ -244,11 +295,10 @@ const main = function() {
                             break;
                         case 'set':
                             if (commands.length > 2) {
-                                
                                 $.ajax({
                                     type: 'GET',
                                     url: getBCDiceApiUrl('/v1/systeminfo'),
-                                    data: {system: gameListLowerCaseTo[commands.slice(2).join('').toLowerCase()] || commands.slice(2).join(' ')},
+                                    data: {system: gameListLowerCaseTo[commands.slice(2).join('').replace(/[\s・]+/g, '').toLowerCase()] || commands.slice(2).join(' ')},
                                     dataType: jsonDataType
                                 })
                                 .done(saveApiUrl)
@@ -273,7 +323,7 @@ const main = function() {
                             } else {
                                 client.sendMessage({
                                     to: channelID,
-                                    message: `[${appName}] ダイスボットを設定、変更したい場合、\`${CURRENT_CONFIG.command_string} set [ダイスボット名]\`*\n例：\`${CURRENT_CONFIG.command_string} set AceKillerGene\``
+                                    message: `[${appName}] ダイスボットを設定、変更したい場合、\`${CURRENT_CONFIG.command_string} set [ダイスボット名（システムID）]\`*\n例：\`${CURRENT_CONFIG.command_string} set AceKillerGene\``
                                 });
                             }
                             break;
@@ -317,7 +367,7 @@ const main = function() {
                                 $.ajax({
                                     type: 'GET',
                                     url: getBCDiceApiUrl('/v1/systeminfo'),
-                                    data: {system: gameListLowerCaseTo[commands.slice(2).join('').toLowerCase()] || commands.slice(2).join(' ')},
+                                    data: {system: gameListLowerCaseTo[commands.slice(2).join('').replace(/[\s・]+/g, '').toLowerCase()] || commands.slice(2).join(' ')},
                                     dataType: jsonDataType
                                 })
                                 .done(saveApiUrl)
