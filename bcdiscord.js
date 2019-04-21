@@ -282,7 +282,7 @@ const main = function() {
                                         gameListLowerCaseTo[gameNames.name.replace(/[\s]+/g, '').toLowerCase()] = gameNames.system;
                                         gameListLowerCaseTo[toCommandString(gameNames.name).replace(/[\s・]+/g, '').toLowerCase()] = gameNames.system;
                                         gameListLowerCaseTo[toCommandString(gameNames.name).replace(/[\s・]+/g, '').replace(/[\&＆]/g, 'アンド').toLowerCase()] = gameNames.system;
-                                        return `${gameNames.name}  → ${gameNames.system}`;
+                                        return `${gameNames.name} → ${gameNames.system}`;
                                     })
                                 );
                             })
