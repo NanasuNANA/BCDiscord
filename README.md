@@ -5,7 +5,7 @@ BCDice-API([Github](https://github.com/NKMR6194/bcdice-api "NKMR6194/bcdice-api"
 BCDice-APIのURLを用意し、Discordで使いたいサーバーを立て、Discord Botを設定する必要があります（Discord自体のアカウントはあるものとする）。
 
 ### BCDice-API URLの用意
-BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[どどんとふ](http://www.dodontof.com/ "どどんとふ＠えくすとり～む")で使用されているダイスボット）をWebから利用するAPIです。可能なら自分で用意してもいいですし、他者が用意したものを利用することもできます。   
+BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[どどんとふ](http://www.dodontof.com/ "どどんとふ＠えくすとり～む")で使用されているダイスボット）をWebから利用するAPIです。可能なら自分で用意してもいいですし、他者が用意したものを利用することもできます（独自BCDice-APIサーバーの立て方は、[BCDice-APIのドキュメント](https://github.com/ysakasin/bcdice-api/blob/master/docs/heroku.md "Herokuへの設置")に[解説が用意](https://twitter.com/ysakasin/status/1114111102260928512)されています）。   
 
 おもに試験用に
 
@@ -13,7 +13,7 @@ BCDice([Github](https://github.com/torgtaitai/BCDice "torgtaitai/BCDice"))（[�
 
 を設置しています。
 
-また公開のBCDice-APIサーバーとして[大ちゃんさんが設置](https://www.taruki.com/wp/?p=6507)してくださっているものがあります（[Twitter](https://twitter.com/DoDontoF_Srv/status/880765000716959748)）。
+また公開のBCDice-APIサーバーとして[大ちゃんさんが設置](https://www.taruki.com/wp/?p=6610)してくださっているものがあります（[Twitter](https://twitter.com/DoDontoF_Srv/status/899993715627835392)）（2019/04/21現在、http版がNot Found）。
 
 ### Discord Botの作成
 1. [開発者ページ](https://discordapp.com/developers/applications/me)にアクセスし、「New App」をクリック
