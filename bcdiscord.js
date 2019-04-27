@@ -21,6 +21,7 @@ if (!window.CONFIG) {
 }
 const CURRENT_CONFIG = Object.assign({
     theme: 'smoothness',
+    use_local_storage: true,
     multiple_max: 10,
     command_string: 'bcdice',
     use_jsonp: false,
@@ -156,7 +157,9 @@ const main = function() {
     
     // BCDice-API URLのローカル保存
     const saveApiUrl = function() {
-        localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
+        if (CURRENT_CONFIG.use_local_storage) {
+            localStorage.setItem(`${appName}_api_url`, getBCDiceApiUrl());
+        }
     }
     
     // BCDice-APIのテスト
@@ -211,7 +214,9 @@ const main = function() {
             
             client.on('ready', () => {
                 connectButton.val('Discordから切断').button("enable");
-                localStorage.setItem(`${appName}_token`, token);
+                if (CURRENT_CONFIG.use_local_storage) {
+                    localStorage.setItem(`${appName}_token`, token);
+                }
                 $.ajax({
                     type: 'GET',
                     url: getBCDiceApiUrl('/v1/systems'),
@@ -323,7 +328,9 @@ const main = function() {
                                         to: channelID,
                                         message: `[${appName}] ダイスボットを${escapeMarkdwon(data.systeminfo.name)}に設定しました。\n\`\`\`\n${escapeBackTick(data.systeminfo.info)}\n\`\`\``
                                     });
-                                    localStorage.setItem(`${appName}_systemInfo`, JSON.stringify(systemInfo));
+                                    if (CURRENT_CONFIG.use_local_storage) {
+                                        localStorage.setItem(`${appName}_systemInfo`, JSON.stringify(systemInfo));
+                                    }
                                 })
                                 .fail(function() {
                                     //TODO 接続失敗を考慮
@@ -342,7 +349,9 @@ const main = function() {
                         case 'reset':
                                 if (commands[2] && commands[2].toLowerCase() === 'me') {
                                     delete saveData[userID];
-                                    localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
+                                    if (CURRENT_CONFIG.use_local_storage) {
+                                        localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
+                                    }
                                     client.sendMessage({
                                         to: channelID,
                                         message: `**>${userName(user, userID)}**\nあなたのシークレットダイスとセーブしたメッセージをリセットしました。`
@@ -433,7 +442,9 @@ const main = function() {
                                     to: userID,
                                     message: `以下のメッセージを呼び出したい場合 > \`${CURRENT_CONFIG.command_string} load ${length}\`\n${saveMessage}`
                                 });
-                                localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
+                                if (CURRENT_CONFIG.use_local_storage) {
+                                    localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
+                                }
                             } else {
                                 client.sendMessage({
                                     to: userID,
@@ -559,7 +570,9 @@ const main = function() {
                                     to: userID,
                                     message: `シークレットダイスの結果を呼び出したい場合\n${userMessages.join("\n")}`
                                 });
-                                localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
+                                if (CURRENT_CONFIG.use_local_storage) {
+                                    localStorage.setItem(`${appName}_saveData`, JSON.stringify(saveData));
+                                }
                             } 
                             if (responsMessages.length > 0) {
                                 client.sendMessage({

@@ -47,31 +47,36 @@ $(() => {
     apiTestButton.button();
     connectButton.button();
     $('input:text, input:password, input[type=url]').button().css({font: 'inherit', color: 'black', 'text-align': 'left', cursor: 'text', 'background-color': 'transparent', 'background-image': 'none'});
+    if (!CURRENT_CONFIG.use_local_storage) {
+        $('#reset_all').hide();
+    }
     
     // ローカルストレージから復元
-    if (CONFIG.api_url) {
-        bcdiceApiUrlInput.val(CONFIG.api_url);
-        if (CONFIG.lock_url_input) {
+    if (CURRENT_CONFIG.api_url) {
+        bcdiceApiUrlInput.val(CURRENT_CONFIG.api_url);
+        if (CURRENT_CONFIG.lock_url_input) {
             bcdiceApiUrlInput.attr('readonly', true);
         };
-    } else if (localStorage.getItem(`${appName}_api_url`)) {
+    } else if (CURRENT_CONFIG.use_local_storage && localStorage.getItem(`${appName}_api_url`)) {
         bcdiceApiUrlInput.val(localStorage.getItem(`${appName}_api_url`));
     }
-    if (localStorage.getItem(`${appName}_token`)) {
-        botTokenInput.val(localStorage.getItem(`${appName}_token`));
-    }
-    if (localStorage.getItem(`${appName}_systemInfo`)) {
-        try {
-            systemInfo = JSON.parse(localStorage.getItem(`${appName}_systemInfo`));
-        } catch (e) {
-            systemInfo = {};
+    if (CURRENT_CONFIG.use_local_storage) {
+        if (localStorage.getItem(`${appName}_token`)) {
+            botTokenInput.val(localStorage.getItem(`${appName}_token`));
         }
-    }
-    if (localStorage.getItem(`${appName}_saveData`)) {
-        try {
-            saveData = JSON.parse(localStorage.getItem(`${appName}_saveData`));
-        } catch(e) {
-            saveData = {};
+        if (localStorage.getItem(`${appName}_systemInfo`)) {
+            try {
+                systemInfo = JSON.parse(localStorage.getItem(`${appName}_systemInfo`));
+            } catch (e) {
+                systemInfo = {};
+            }
+        }
+        if (localStorage.getItem(`${appName}_saveData`)) {
+            try {
+                saveData = JSON.parse(localStorage.getItem(`${appName}_saveData`));
+            } catch(e) {
+                saveData = {};
+            }
         }
     }
     
@@ -122,6 +127,9 @@ $(() => {
     
     // ローカルストレージからの全削除
     $('#reset_all').on('click', () => {
+        if (!CURRENT_CONFIG.use_local_storage) {
+            return false;
+        }
         $('#confirm-reset-all').dialog({
             show: {effect: 'clip', duration: 300},
             hide: {effect: 'clip', duration: 300},
