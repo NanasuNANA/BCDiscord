@@ -31,8 +31,8 @@ const CONFIG = {
   multiple_max: 8,
   // コマンドを'bcdice'から変更
   //command_string: 'bcd',
-  // ブラウザからのJSONデータの取得にjsonpを使用する（デフォルトtrue）、使用しない場合API側がCORSに対応している必要がある
-  //use_jsonp: false,
+  // ブラウザからのJSONデータの取得にjsonpを使用する（デフォルトfalse）、利用するBCDice-APIのバージョンが0.6未満の場合はtrueにする必要あり（非推奨）
+  //use_jsonp: true,
   // ダイスコマンドの全角半角変換後、APIに送る前に行う処理を定義できる
   pre_process: function(command, infos) {
     // gameTypeがエースキラージーン等の場合、ダイスのデフォルトをD10にする

@@ -23,13 +23,13 @@ const CURRENT_CONFIG = Object.assign({
     theme: 'smoothness',
     multiple_max: 10,
     command_string: 'bcdice',
-    use_jsonp: true,
+    use_jsonp: false,
     result_at_mention: true
 }, CONFIG);
 
 // 定数
 const appName = 'BCDiscord';
-const appVersion = '0.9.6';
+const appVersion = '0.9.7';
 
 let jsonDataType = CURRENT_CONFIG.use_jsonp ? 'jsonp' : 'json';
 
@@ -50,6 +50,17 @@ let connectButton;
 let alertMissingToken;
 let alertMissingApiUrl;
 let confirmDisconnect;
+
+const limitedEval = math.eval;
+
+math.import({
+  'import': function () { throw new Error('Function import is disabled') },
+  'createUnit': function () { throw new Error('Function createUnit is disabled') },
+  'eval': function () { throw new Error('Function eval is disabled') },
+  'parse': function () { throw new Error('Function parse is disabled') },
+  'simplify': function () { throw new Error('Function simplify is disabled') },
+  'derivative': function () { throw new Error('Function derivative is disabled') }
+}, { override: true });
 
 // 全角半角変換かつnull、undefinedを空文字に
 const toCommandString = function(str, nullSafe=true) {
@@ -435,6 +446,15 @@ const main = function() {
                         }
                     });
                 } else {
+                    // C(計算式)
+                    let expr = commands[0].match(/^C\(([\d\.\+\-\*\/\(\)]+)\)$/i);
+                    if (expr) {
+                        client.sendMessage({
+                            to: channelID,
+                            message: `[${appName}] ${escapeMarkdwon(expr[1])} = ${escapeMarkdwon(limitedEval(expr[1]))}`
+                        });
+                        return;
+                    }
                     // 複数回か？
                     let count = 1;
                     let isMultiple = false;
