@@ -88,11 +88,12 @@ const escapeBackTick = function(str, nullSafe=true) {
 }
 
 // Markdwonのインライン記法をエスケープ
-const escapeMarkdwon = function(str, nullSafe=true) {
+const escapeMarkdwon = function(str, nullSafe=true, escapeSpoiler=true) {
     if (!str) {
         return nullSafe ? '' : str;
     }
-    return escapeBackTick(str).replace(/\*/g, '\\*').replace(/_/g, '\\_').replace(/~/g, '\\~');
+    str = escapeBackTick(str).replace(/\*/g, '\\*').replace(/_/g, '\\_').replace(/~/g, '\\~');
+    return escapeSpoiler ? str.replace(/\|/g, '\\|') : str;
 }
 
 // CONFIGを参照しユーザへの@mentionかユーザ名を切り替える
