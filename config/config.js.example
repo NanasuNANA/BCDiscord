@@ -23,7 +23,7 @@ const CONFIG = {
   api_url: 'https://nana-bcdice-api.herokuapp.com/',
   // URL入力欄をロックするか（デフォルトfalse、api_urlでURLが指定されている場合のみ有効）
   lock_url_input: true,
-  // データ保存にローカルストレージを使用するか（デフォルトtrue）、使用いない場合、ブラウザを閉じると設定したデータが消える
+  // データ保存にローカルストレージを使用するか（デフォルトtrue）、使用しない場合、ブラウザを閉じると設定したデータが消える
   //use_local_storage: false,
   // Botに「～をプレイ中」を表示するか、複数チャンネルで違うシステムをプレイしている場合ダイスを振るたびに表示が変わります（デフォルトfalse）
   show_game_name: true,
