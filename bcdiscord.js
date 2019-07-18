@@ -30,7 +30,7 @@ const CURRENT_CONFIG = Object.assign({
 
 // 定数
 const appName = 'BCDiscord';
-const appVersion = '0.9.7';
+const appVersion = '0.9.8';
 
 let jsonDataType = CURRENT_CONFIG.use_jsonp ? 'jsonp' : 'json';
 
@@ -39,7 +39,11 @@ let systemInfo = {};
 // ユーザ→配列インデックス
 let saveData = {};
 // ゲームリストの大文字小文字変換用
-let gameListLowerCaseTo = {};
+let gameListLowerCaseTo = {
+    dicebot: 'DiceBot',
+    '標準ダイスボット': 'DiceBot',
+    'ダイスボット': 'DiceBot'
+};
 
 let resultSpan;
 let bcdiceApiUrlInput;
@@ -51,17 +55,6 @@ let connectButton;
 let alertMissingToken;
 let alertMissingApiUrl;
 let confirmDisconnect;
-
-const limitedEval = math.eval;
-
-math.import({
-  'import': function () { throw new Error('Function import is disabled') },
-  'createUnit': function () { throw new Error('Function createUnit is disabled') },
-  'eval': function () { throw new Error('Function eval is disabled') },
-  'parse': function () { throw new Error('Function parse is disabled') },
-  'simplify': function () { throw new Error('Function simplify is disabled') },
-  'derivative': function () { throw new Error('Function derivative is disabled') }
-}, { override: true });
 
 // 全角半角変換かつnull、undefinedを空文字に
 const toCommandString = function(str, nullSafe=true) {
@@ -208,7 +201,7 @@ const main = function() {
             const sendHowToUse = (channelID) => {
                 client.sendMessage({
                     to: channelID,
-                    message: `[${appName}] **使い方**\n# 利用可能なダイスボット名（システムID）の一覧\n> \`${CURRENT_CONFIG.command_string} list\`\n# 使用可能なゲーム名 → ダイスボット名（システムID）一覧（API Ver. 0.6以上）\n> \`${CURRENT_CONFIG.command_string} names\`\n# 使用するダイスボットの設定、変更\n> \`${CURRENT_CONFIG.command_string} set [ダイスボット名（システムID）]\`\n# ダイスボットのヘルプを表示\n> \`${CURRENT_CONFIG.command_string} help [ダイスボット名（システムID）]\`\n# 現在の状態（APIのURL、設定されたダイスボットとバージョン）\n> \`${CURRENT_CONFIG.command_string} status\`\n# あなたのセーブされたシークレットダイスとメッセージをリセット\n> \`${CURRENT_CONFIG.command_string} reset me\``
+                    message: `[${appName}] **使い方**\n# 利用可能なダイスボット名（システムID）の一覧\n> \`${CURRENT_CONFIG.command_string} list\`\n# 使用可能なゲーム名 → ダイスボット名（システムID）一覧（API Ver. 0.6以上）\n> \`${CURRENT_CONFIG.command_string} names\`\n# 使用するダイスボットの設定、変更\n> \`${CURRENT_CONFIG.command_string} set ダイスボット名（システムID）\`\n# ダイスボットのヘルプを表示\n> \`${CURRENT_CONFIG.command_string} help ダイスボット名（システムID）\`\n# 現在の状態（APIのURL、設定されたダイスボットとバージョン）\n> \`${CURRENT_CONFIG.command_string} status\`\n# あなたのセーブされたシークレットダイスとメッセージをリセット\n> \`${CURRENT_CONFIG.command_string} reset me\``
                 });
             };
             
@@ -267,8 +260,8 @@ const main = function() {
                                     `[${appName}] 使用可能なダイスボット名（システムID）一覧\n`,
                                     data.systems.map(gameType => {
                                         gameListLowerCaseTo[gameType.toLowerCase()] = gameType;
-                                        gameListLowerCaseTo[gameType.replace(/\s+/g, '').toLowerCase()] = gameType;
-                                        gameListLowerCaseTo[gameType.replace(/\s+/g, '').replace(/\&/g, 'And').toLowerCase()] = gameType;
+                                        gameListLowerCaseTo[gameType.replace(/[\s=!\.]+/g, '').toLowerCase()] = gameType;
+                                        gameListLowerCaseTo[gameType.replace(/[\s=!\.]+/g, '').replace(/\&/g, 'And').toLowerCase()] = gameType;
                                         return gameType;
                                     })
                                 );
@@ -294,11 +287,12 @@ const main = function() {
                                     `[${appName}] 使用可能なゲーム名 → ダイスボット名（システムID）一覧\n`,
                                     data.names.sort((v1, v2) => { if (v1.name == v2.name) return 0; return (v1.name < v2.name) ? -1 : 1 }).map(gameNames => {
                                         gameListLowerCaseTo[gameNames.system.toLowerCase()] = gameNames.system;
-                                        gameListLowerCaseTo[gameNames.system.replace(/\s+/g, '').toLowerCase()] = gameNames.system;
-                                        gameListLowerCaseTo[gameNames.system.replace(/\s+/g, '').replace(/\&/g, 'And').toLowerCase()] = gameNames.system;
-                                        gameListLowerCaseTo[gameNames.name.replace(/[\s]+/g, '').toLowerCase()] = gameNames.system;
-                                        gameListLowerCaseTo[toCommandString(gameNames.name).replace(/[\s・]+/g, '').toLowerCase()] = gameNames.system;
-                                        gameListLowerCaseTo[toCommandString(gameNames.name).replace(/[\s・]+/g, '').replace(/[\&＆]/g, 'アンド').toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[gameNames.system.replace(/[\s=!\.]+/g, '').toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[gameNames.system.replace(/[\s=!\.]+/g, '').replace(/\&/g, 'And').toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[toCommandString(gameNames.name).replace(/\s+/g, '').toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[toCommandString(gameNames.name).replace(/[\s・=＝!\.]+/g, '').toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[toCommandString(gameNames.name).replace(/[\s・=＝!\.]+/g, '').replace(/[\&＆]/g, 'アンド').toLowerCase()] = gameNames.system;
+                                        gameListLowerCaseTo[toCommandString(gameNames.name).replace(/[\s・=＝!\.]+/g, '').replace(/[◎●○]/g, 'o').toLowerCase()] = gameNames.system;
                                         return `${gameNames.name} → ${gameNames.system}`;
                                     })
                                 );
@@ -458,15 +452,6 @@ const main = function() {
                         }
                     });
                 } else {
-                    // C(計算式)
-                    let expr = commands[0].match(/^C\(([\d\.\+\-\*\/\(\)]+)\)$/i);
-                    if (expr) {
-                        client.sendMessage({
-                            to: channelID,
-                            message: `[${appName}] ${escapeMarkdwon(expr[1])} = ${escapeMarkdwon(limitedEval(expr[1]))}`
-                        });
-                        return;
-                    }
                     // 複数回か？
                     let count = 1;
                     let isMultiple = false;
