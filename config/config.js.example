@@ -29,7 +29,7 @@ const CONFIG = {
   show_game_name: true,
   // ダイスロール結果を@mentionとして表示する（デフォルトtrue）
   result_at_mention: false,
-  // 複数回ロールの最大数(デフォルト10回、0で複数回ロール不許可、nullで回数制限なし)
+  // 複数回ロールの最大数(デフォルト10回、0で複数回ロール不許可、nullで回数制限なし、Discordの投稿文字数制限に注意)
   multiple_max: 8,
   // コマンドを'bcdice'から変更
   //command_string: 'bcd',
